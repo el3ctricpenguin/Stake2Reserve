@@ -8,9 +8,22 @@ describe("Stake2Reserve", ()=>{
         contractFactory = await ethers.getContractFactory("Stake2Reserve");
         contract = await contractFactory.deploy();
         await contract.waitForDeployment();
-
         return {owner, otherAccount, contract};
-    }
+    };
+    const deployContractAndRegisterShopProperty = async()=>{
+        const {owner, otherAccount, contract} = await loadFixture(deployContract);
+        const _name = "Shop Name Here";
+        const openingWeekDays = [true, false, true, true, true, true, true]; // only closed on Monday
+        const openingTime = 60*60*10; // from 10am
+        const closingTime = 60*60*18; // to 6pm
+        const courses = [{name: "delicious sushi", cancelFee: 100, imageURLs: ["https://i.imgur.com/4dr7xZo.jpeg", "https://i.imgur.com/zWwZ1Bm.jpeg"]}];
+        const imageURL = "https://i.imgur.com/FSmb6op.jpeg";
+        const genre = "Japanese Food";
+        const description = "ZenBite Sushi is a fictional sushi restaurant with a serene garden ambiance. Their menu includes both traditional and innovative sushi rolls, prepared by expert chefs at an open bar, providing a unique dining experience.";
+        await contract.registerShopProperty(_name, openingWeekDays, openingTime, closingTime, courses, imageURL, genre, description);
+        return {owner, otherAccount, contract};
+    };
+
     describe("NFT", ()=>{
         it("should mint a NFT to msg.sender", async ()=>{
             const {owner, contract} = await loadFixture(deployContract);
@@ -71,22 +84,22 @@ describe("Stake2Reserve", ()=>{
     describe("Reservation", ()=>{
         describe("require", ()=>{
             it("should revert because of wrong week day", async()=>{
-                const {contract} = await loadFixture(deployContract);
+                const {owner, contract} = await loadFixture(deployContractAndRegisterShopProperty);
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 2, 0+4, 30, 0)).getTime()/1000;
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 2, 1+4, 30, 0)).getTime()/1000;
-                await expect(contract.reserve(ethers.ZeroAddress, reservationStartTime, reservationEndTime)).to.be.revertedWith("Shop is closed on the reservation date");
+                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime)).to.be.revertedWith("Shop is closed on the reservation date");
             });
             it("should revert because of wrong time", async()=>{
-                const {contract} = await loadFixture(deployContract);
+                const {owner, contract} = await loadFixture(deployContractAndRegisterShopProperty);
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 0+4, 30, 0)).getTime()/1000;
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 1+4, 30, 0)).getTime()/1000;
-                await expect(contract.reserve(ethers.ZeroAddress, reservationStartTime, reservationEndTime)).to.be.revertedWith("Shop is closed on the reservation time");
+                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime)).to.be.revertedWith("Shop is closed on the reservation time");
             });
             it("should not be reverted", async()=>{
-                const {contract} = await loadFixture(deployContract);
+                const {owner, contract} = await loadFixture(deployContractAndRegisterShopProperty);
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000;
-                await expect(contract.reserve(ethers.ZeroAddress, reservationStartTime, reservationEndTime)).not.to.be.reverted;
+                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime)).not.to.be.reverted;
             });
         });
     });
