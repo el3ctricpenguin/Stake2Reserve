@@ -90,6 +90,12 @@ contract Stake2Reserve is ERC721URIStorage{
         }
     }
 
+    /*-------------------------+
+    |    Register Shop Info    |
+    +-------------------------*/
+
+    function registerShopProperty(){}
+
     function exists (uint256 _tokenId) public view returns (bool){
         return _exists(_tokenId);
     }
