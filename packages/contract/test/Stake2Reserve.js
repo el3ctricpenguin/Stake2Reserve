@@ -10,7 +10,7 @@ describe("Stake2Reserve", ()=>{
         await contract.waitForDeployment();
         return {owner, otherAccount, contract};
     };
-    const deployContractAndRegisterShopProperty = async()=>{
+    const deployedContractAndRegisteredShopProperty = async()=>{
         const {owner, otherAccount, contract} = await loadFixture(deployContract);
         const _name = "Shop Name Here";
         const openingWeekDays = [true, false, true, true, true, true, true]; // only closed on Monday
@@ -21,6 +21,12 @@ describe("Stake2Reserve", ()=>{
         const genre = "Japanese Food";
         const description = "ZenBite Sushi is a fictional sushi restaurant with a serene garden ambiance. Their menu includes both traditional and innovative sushi rolls, prepared by expert chefs at an open bar, providing a unique dining experience.";
         await contract.registerShopProperty(_name, openingWeekDays, openingTime, closingTime, courses, imageURL, genre, description);
+        return {owner, otherAccount, contract};
+    };
+    const deployedContractAndRegisteredShopPropertyAndReservedSome = async()=>{
+        const {owner, otherAccount, contract} = await loadFixture(deployedContractAndRegisteredShopProperty);
+        await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000, 2, 0);
+        await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 6, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 6, 11+4, 0, 0)).getTime()/1000, 2, 1);
         return {owner, otherAccount, contract};
     };
 
@@ -83,23 +89,35 @@ describe("Stake2Reserve", ()=>{
     });
     describe("Reservation", ()=>{
         describe("require", ()=>{
-            it("should revert because of wrong week day", async()=>{
-                const {owner, contract} = await loadFixture(deployContractAndRegisterShopProperty);
+            it("should be reverted because of wrong week day", async()=>{
+                const {owner, contract} = await loadFixture(deployedContractAndRegisteredShopProperty);
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 2, 0+4, 30, 0)).getTime()/1000;
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 2, 1+4, 30, 0)).getTime()/1000;
                 await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).to.be.revertedWith("Shop is closed on the reservation date");
             });
-            it("should revert because of wrong time", async()=>{
-                const {owner, contract} = await loadFixture(deployContractAndRegisterShopProperty);
+            it("should be reverted because of wrong time", async()=>{
+                const {owner, contract} = await loadFixture(deployedContractAndRegisteredShopProperty);
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 0+4, 30, 0)).getTime()/1000;
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 1+4, 30, 0)).getTime()/1000;
                 await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).to.be.revertedWith("Shop is closed on the reservation time");
             });
             it("should not be reverted", async()=>{
-                const {owner, contract} = await loadFixture(deployContractAndRegisterShopProperty);
+                const {owner, contract} = await loadFixture(deployedContractAndRegisteredShopProperty);
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000;
                 await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).not.to.be.reverted;
+            });
+        });
+    });
+    describe("Check Out", ()=>{
+        describe("setPaymentAmount", ()=>{
+            it("should be reverted because of wrong msg.sender", async()=>{
+                const {owner, otherAccount, contract} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                await expect(contract.connect(otherAccount).setPaymentAmount(0, 200)).to.be.revertedWith("msg.sender should be the shop owner");
+            });
+            it("should not be reverted", async()=>{
+                const {owner, otherAccount, contract} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                await expect(contract.setPaymentAmount(0, 200)).not.to.be.reverted;
             });
         });
     });

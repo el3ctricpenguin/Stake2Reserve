@@ -47,6 +47,7 @@ contract Stake2Reserve is ERC721URIStorage{
         uint256 endingTime; // unix time
         uint256 guestCount;
         uint256 courseId;
+        uint256 paymentAmount;
     }
 
 
@@ -56,6 +57,8 @@ contract Stake2Reserve is ERC721URIStorage{
     function reserve (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
         
         // Date & Time validation
+        console.log("getWeekDay(_startingTime): ",getWeekDay(_startingTime));
+        console.log("shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)]: ",shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)]);
         require(shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)], "Shop is closed on the reservation date");
         require(isReservationWithinOpeningTime(_shopAddress, _startingTime, _endingTime), "Shop is closed on the reservation time");
         // TODO: Does the course exists?
@@ -139,11 +142,18 @@ contract Stake2Reserve is ERC721URIStorage{
     }
 
     function isReservationWithinOpeningTime(address _shopAddress, uint256 _openingTime, uint256 _closingTime) private view returns(bool) {
-        if(getTime(_openingTime)>shops[_shopAddress].openingTime && getTime(_closingTime)<shops[_shopAddress].closingTime){
+        if(getTime(_openingTime)>=shops[_shopAddress].openingTime && getTime(_closingTime)<=shops[_shopAddress].closingTime){
             return true;
         }else{
             return false;
         }
+    }
+    /*-------------+
+    |   Checkout   |
+    +-------------*/
+    function setPaymentAmount(uint256 _tokenId, uint256 _paymentAmount) public {
+        require(msg.sender == reservations[_tokenId].shopAddress, "msg.sender should be the shop owner");
+        reservations[_tokenId].paymentAmount = _paymentAmount;
     }
 
     /*-------------------------+
