@@ -5,6 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Root from "./routes/root";
 import Index from "./routes";
 import Restaurant from "./routes/restaurant";
+import RestaurantRegistration from "./routes/restaurantRegistration";
 
 const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ const router = createBrowserRouter([
       {
         path: "/restaurant/:id",
         element: <Restaurant />,
+      },
+      {
+        path: "/restaurant/registration",
+        element: <RestaurantRegistration />,
       },
     ],
   },
