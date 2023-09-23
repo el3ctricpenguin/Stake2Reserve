@@ -5,7 +5,7 @@ import { Outlet, useLoaderData } from "react-router-dom";
 export default function Root() {
   const { hasConnected, account } = useLoaderData();
 
-  console.log("Conn: ", hasConnected, account);
+  // console.log("Conn: ", hasConnected, account);
 
   return (
     <>

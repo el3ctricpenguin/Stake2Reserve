@@ -55,7 +55,9 @@ export default function RestaurantRegistration() {
     <>
       <Center mb="10">
         <Stack spacing="4">
-          <Heading>Registration</Heading>
+          <Heading as="em">
+            <u>Registration</u>
+          </Heading>
           <Form method="post">
             <FormControl>
               <FormLabel>Restaurant Name</FormLabel>

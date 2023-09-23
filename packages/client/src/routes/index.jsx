@@ -5,7 +5,10 @@ export default function Index() {
   return (
     <>
       <Box>
-        <Heading>Find Store</Heading>
+        <Heading as="em">
+          <u>Find a restaurant</u>
+        </Heading>
+
         <RestaurantList />
       </Box>
     </>
