@@ -15,26 +15,33 @@ contract Stake2Reserve is ERC721URIStorage{
 
     mapping (address=>ShopStatus) shops;
     struct ShopStatus{
-        string name;
+        // essential data
         bool[7] openingWeekDay; // 0~6: Sun~Sat
         uint256 openingTime;
         uint256 closingTime;
+        mapping (uint256=>Course) courses;
+
+        // extra data
+        string name;
         string imageURL;
         string genre;
-        // courses;
         string description;
         string shopAddress;
     }
+    struct Course{
+        string name;
+        uint256 cancelFee;
+        string[] imageURLs;
+    }
 
     mapping (uint256=>ReservationData) reservations;
-
     struct ReservationData{
         string name;
         uint256 startingTime; // unix time
         uint256 endingTime; // unix time
         uint256 guestCount;
-        // courses;
     }
+
 
     constructor() ERC721("Stake2Reserve NFT", "S2R"){
         shops[address(0)].openingWeekDay = [true, false, true, true, true, true, true];
