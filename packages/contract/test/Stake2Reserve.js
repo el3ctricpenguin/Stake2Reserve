@@ -27,13 +27,13 @@ describe("Stake2Reserve", ()=>{
     describe("NFT", ()=>{
         it("should mint a NFT to msg.sender", async ()=>{
             const {owner, contract} = await loadFixture(deployContract);
-            await contract.mintNFT();
+            await contract.mintReservationNFT();
             expect(await contract.ownerOf(0)).to.equal(owner.address);
         });
         it("should burn a NFT", async ()=>{
             const {owner, contract} = await loadFixture(deployContract);
-            await contract.mintNFT();
-            await contract.burnNFT(0);
+            await contract.mintReservationNFT();
+            await contract.burnReservationNFT(0);
             expect(await contract.exists(0)).to.equal(false);
         });
     });
@@ -87,7 +87,7 @@ describe("Stake2Reserve", ()=>{
                 const {owner, contract} = await loadFixture(deployContractAndRegisterShopProperty);
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 2, 0+4, 30, 0)).getTime()/1000;
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 2, 1+4, 30, 0)).getTime()/1000;
-                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime)).to.be.revertedWith("Shop is closed on the reservation date");
+                await expect(contract.reserve(owner.address, [{reservationStartTime, reservationEndTime}])).to.be.revertedWith("Shop is closed on the reservation date");
             });
             it("should revert because of wrong time", async()=>{
                 const {owner, contract} = await loadFixture(deployContractAndRegisterShopProperty);

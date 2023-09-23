@@ -5,6 +5,8 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
+import "@openzeppelin/contracts/utils/Base64.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 
 contract Stake2Reserve is ERC721URIStorage{
@@ -12,6 +14,10 @@ contract Stake2Reserve is ERC721URIStorage{
     Counters.Counter private _tokenIds;
 
     uint256 NY_SUMMER_TIME_2023_01_01 = 1672545600;
+
+    /*--------------+
+    |   Variables   |
+    +--------------*/
 
     mapping (address=>ShopStatus) shops;
     struct ShopStatus{
@@ -35,39 +41,71 @@ contract Stake2Reserve is ERC721URIStorage{
 
     mapping (uint256=>ReservationData) reservations;
     struct ReservationData{
-        string name;
+        address shopAddress;
+        string shopName;
         uint256 startingTime; // unix time
         uint256 endingTime; // unix time
         uint256 guestCount;
+        uint256 courseId;
     }
 
 
     constructor() ERC721("Stake2Reserve NFT", "S2R"){
     }
 
-    function reserve (address _shopAddress, uint256 _startTime, uint256 _endTime) public {
-        console.log("shops[_shopAddress].openingWeekDays: ",shops[_shopAddress].openingWeekDays[0]);
-        console.log("getWeekDay(_startTime): ",getWeekDay(_startTime));
-        require(shops[_shopAddress].openingWeekDays[getWeekDay(_startTime)], "Shop is closed on the reservation date");
-        require(isReservationWithinOpeningTime(_shopAddress, _startTime, _endTime), "Shop is closed on the reservation time");
-        mintNFT();
+    function reserve (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
+        require(shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)], "Shop is closed on the reservation date");
+        require(isReservationWithinOpeningTime(_shopAddress, _startingTime, _endingTime), "Shop is closed on the reservation time");
+        mintReservationNFT(_shopAddress, _startingTime, _endingTime, _guestCount, _courseId);
         // TODO: add an event
     }
 
     /*--------+
     |   NFT   |
     +--------*/
-    function mintNFT () public {
+    function mintReservationNFT (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
         uint256 newItemId = _tokenIds.current();
 
-        string memory tokenURI = '{"name": "Stake2Reserve NFT", "description": "Penguin", "image: "https://i.imgur.com/T2F51Kn.jpeg"}';
+        // set parameters
+        reservations[newItemId].shopAddress = _shopAddress;
+        reservations[newItemId].shopName = shops[_shopAddress].name;
+        reservations[newItemId].startingTime = _startingTime;
+        reservations[newItemId].endingTime = _endingTime;
+        reservations[newItemId].guestCount = _guestCount;
+        reservations[newItemId].courseId = _courseId;
+
+        string memory tokenURI = string(abi.encodePacked(
+            '{"name": "Stake2Reserve Reservation NFT",',
+            '"description": "Penguin",',
+            '"image": "https://i.imgur.com/T2F51Kn.jpeg"",',
+            '"attributes": [',
+            '{"trait_type": "Shop Address",',
+            '"value": "',Strings.toHexString(_shopAddress),'"},',
+            '{"trait_type": "Shop Name",',
+            '"value": "',shops[_shopAddress].name,'"},',
+            '{"trait_type": "Reservation Date",',
+            '"display_type": "date",',
+            '"value": "',Strings.toString(_startingTime),'"},',
+            '{"trait_type": "Reservation Start Time",',
+            '"value": "',Strings.toString(_startingTime),'"},',
+            '{"trait_type": "Reservation End Time",',
+            '"value": "',Strings.toString(_endingTime),'"},',
+            '{"trait_type": "Guest Count",',
+            '"value": "',Strings.toString(_guestCount),'"},',
+            '{"trait_type": "Course Id",',
+            '"value": "',Strings.toString(_courseId),'"},',
+            '{"trait_type": "Cancel Fee",',
+            '"value": "',Strings.toString(shops[_shopAddress].courses[_courseId].cancelFee),'"}',
+            ']',
+            '}'
+        ));
         _mint(msg.sender, newItemId);
         _setTokenURI(newItemId, tokenURI);
 
         _tokenIds.increment();
     }
 
-    function burnNFT (uint256 _tokenId) public {
+    function burnReservationNFT (uint256 _tokenId) public {
         _burn(_tokenId);
     }
 
