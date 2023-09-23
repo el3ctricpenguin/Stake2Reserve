@@ -9,7 +9,7 @@ import {
 } from "@chakra-ui/react";
 import ConnectModal from "./ConnectModal";
 import { useAccount } from "wagmi";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 // eslint-disable-next-line react/prop-types
 export default function CommonHeader({ hasConnected, checkAccount }) {
@@ -40,7 +40,9 @@ export default function CommonHeader({ hasConnected, checkAccount }) {
   return (
     <Flex minWidth="max-content" alignItems="center" gap="2" padding="4">
       <Box p="2">
-        <Heading size="md">stake2reserve</Heading>
+        <Link to="/">
+          <Heading size="md">stake2reserve</Heading>
+        </Link>
       </Box>
       <Spacer />
       <ButtonGroup gap="2">{renderConnectButton()}</ButtonGroup>
