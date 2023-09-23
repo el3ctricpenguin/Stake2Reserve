@@ -1,7 +1,9 @@
+import CommonHeader from "../components/CommonHeader";
+
 export default function Root() {
   return (
     <>
-      <p>This is root page</p>
+      <CommonHeader />
     </>
   );
 }
