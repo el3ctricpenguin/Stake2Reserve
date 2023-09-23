@@ -5,7 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Root from "./routes/root";
 import Index from "./routes";
 import Restaurant from "./routes/restaurant";
-import RestaurantRegistration from "./routes/restaurantRegistration";
+import RestaurantRegistration from "./routes/restaurant-registration";
 
 const router = createBrowserRouter([
   {
