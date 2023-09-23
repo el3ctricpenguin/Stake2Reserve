@@ -46,9 +46,12 @@ contract Stake2Reserve is ERC721URIStorage{
     }
 
     function reserve (address _shopAddress, uint256 _startTime, uint256 _endTime) public {
+        console.log("shops[_shopAddress].openingWeekDays: ",shops[_shopAddress].openingWeekDays[0]);
+        console.log("getWeekDay(_startTime): ",getWeekDay(_startTime));
         require(shops[_shopAddress].openingWeekDays[getWeekDay(_startTime)], "Shop is closed on the reservation date");
         require(isReservationWithinOpeningTime(_shopAddress, _startTime, _endTime), "Shop is closed on the reservation time");
         mintNFT();
+        // TODO: add an event
     }
 
     /*--------+
@@ -99,21 +102,27 @@ contract Stake2Reserve is ERC721URIStorage{
     /*-------------------------+
     |    Register Shop Info    |
     +-------------------------*/
-    function registerShopProperty(string memory _name, bool[7] memory _openingWeekDayss, uint256 _openingTime, uint256 _closingTime, Course[] memory _courses, string memory _imageURL, string memory _genre, string memory _description) public {
+    function registerShopProperty(string memory _name, bool[7] memory _openingWeekDays, uint256 _openingTime, uint256 _closingTime, Course[] memory _courses, string memory _imageURL, string memory _genre, string memory _description) public {
         // essential data
         setShopName(msg.sender, _name);
-        setopeningWeekDayss(msg.sender, _openingWeekDayss);
+        setOpeningWeekDays(msg.sender, _openingWeekDays);
+        console.log("_openingWeekDays: ",_openingWeekDays[0]);
+        console.log("_openingWeekDays: ",_openingWeekDays[1]);
         setShopOpeningTime(msg.sender, _openingTime, _closingTime);
         setShopCourses(msg.sender, _courses);
         // extra data
         setExtraData(msg.sender, _name, _imageURL, _genre, _description);
+        // TODO: add an event
     }
 
     function setShopName(address _shopAddress, string memory _name) private {
         shops[_shopAddress].name = _name;
     }    
-    function setopeningWeekDayss(address _shopAddress, bool[7] memory _openingWeekDayss) private {
-        shops[_shopAddress].openingWeekDays = _openingWeekDayss;
+    function setOpeningWeekDays(address _shopAddress, bool[7] memory _openingWeekDays) private {
+        bool[7] storage openingWeekDays = shops[_shopAddress].openingWeekDays;
+        for (uint i;i<openingWeekDays.length;i++){
+            openingWeekDays[i] = _openingWeekDays[i];
+        }
     }
     function setShopOpeningTime(address _shopAddress, uint256 _openingTime, uint256 _closingTime) private {
         shops[_shopAddress].openingTime = _openingTime;
