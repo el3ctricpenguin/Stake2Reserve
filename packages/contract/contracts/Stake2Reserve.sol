@@ -213,4 +213,38 @@ contract Stake2Reserve is ERC721URIStorage{
         shopStatus.genre = _genre;
         shopStatus.description = _description;
     }
+    /*-------------------+
+    |    For Frontend    |
+    +-------------------*/
+    function getReservationData(uint256 _tokenId) public view returns(ReservationData memory) {
+        return reservations[_tokenId];
+    }
+
+    struct ShopStatusWithoutCources{ // Without Couses(mapping)
+        // essential data
+        bool[7] openingWeekDays; // 0~6: Sun~Sat
+        uint256 openingTime;
+        uint256 closingTime;
+
+        // extra data
+        string name;
+        string imageURL;
+        string genre;
+        string description;
+    }
+
+    function getShopStatus(address _shopAddress) public view returns(ShopStatusWithoutCources memory){
+        return ShopStatusWithoutCources(
+            shops[_shopAddress].openingWeekDays,
+            shops[_shopAddress].openingTime,
+            shops[_shopAddress].closingTime,
+            shops[_shopAddress].name,
+            shops[_shopAddress].imageURL,
+            shops[_shopAddress].genre,
+            shops[_shopAddress].description
+        );
+    }
+    function getCourses(address _shopAddress, uint256 _courseId) public view returns(Course memory){
+        return shops[_shopAddress].courses[_courseId];
+    }
 }

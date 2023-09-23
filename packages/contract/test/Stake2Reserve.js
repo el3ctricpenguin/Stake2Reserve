@@ -154,4 +154,19 @@ describe("Stake2Reserve", ()=>{
             });
         });
     });
+    describe("For Frontend", ()=>{
+        it("should return ReservationData", async()=>{
+            const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+            console.log(await contract.getReservationData(0));
+            // expect(await contract.getReservationData(0)).to.equal(['0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266','Shop Name Here','1696350600','1696354200','2','0','0',false,]);
+        });
+        it("should return ShopStatusWithoutCources", async()=>{
+            const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+            console.log(await contract.getShopStatus(owner.address));
+        });
+        it("should return courses", async()=>{
+            const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+            console.log(await contract.getCourses(owner.address, 1));
+        });
+    });
 });
