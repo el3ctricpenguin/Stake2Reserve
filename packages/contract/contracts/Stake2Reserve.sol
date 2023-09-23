@@ -16,7 +16,7 @@ contract Stake2Reserve is ERC721URIStorage{
     mapping (address=>ShopStatus) shops;
     struct ShopStatus{
         // essential data
-        bool[7] openingWeekDay; // 0~6: Sun~Sat
+        bool[7] openingWeekDays; // 0~6: Sun~Sat
         uint256 openingTime;
         uint256 closingTime;
         mapping (uint256=>Course) courses;
@@ -26,7 +26,6 @@ contract Stake2Reserve is ERC721URIStorage{
         string imageURL;
         string genre;
         string description;
-        string shopAddress;
     }
     struct Course{
         string name;
@@ -44,17 +43,17 @@ contract Stake2Reserve is ERC721URIStorage{
 
 
     constructor() ERC721("Stake2Reserve NFT", "S2R"){
-        shops[address(0)].openingWeekDay = [true, false, true, true, true, true, true];
-        shops[address(0)].openingTime = 60*60*10;
-        shops[address(0)].closingTime = 60*60*18;
     }
 
     function reserve (address _shopAddress, uint256 _startTime, uint256 _endTime) public {
-        require(shops[_shopAddress].openingWeekDay[getWeekDay(_startTime)], "Shop is closed on the reservation date");
+        require(shops[_shopAddress].openingWeekDays[getWeekDay(_startTime)], "Shop is closed on the reservation date");
         require(isReservationWithinOpeningTime(_shopAddress, _startTime, _endTime), "Shop is closed on the reservation time");
         mintNFT();
     }
 
+    /*--------+
+    |   NFT   |
+    +--------*/
     function mintNFT () public {
         uint256 newItemId = _tokenIds.current();
 
@@ -69,6 +68,13 @@ contract Stake2Reserve is ERC721URIStorage{
         _burn(_tokenId);
     }
 
+    function exists (uint256 _tokenId) public view returns (bool){
+        return _exists(_tokenId);
+    }
+
+    /*------------------+
+    |   Week and Time   |
+    +------------------*/
     function getWeekDay(uint256 _unixTime) public view returns(uint256){
         uint256 diffTimeYear = _unixTime - NY_SUMMER_TIME_2023_01_01; // seconds from 2023/01/01 (NY Summertime, Sunday)
         uint256 diffTimeWeek = diffTimeYear%(60*60*24*7);
@@ -93,10 +99,36 @@ contract Stake2Reserve is ERC721URIStorage{
     /*-------------------------+
     |    Register Shop Info    |
     +-------------------------*/
+    function registerShopProperty(string memory _name, bool[7] memory _openingWeekDayss, uint256 _openingTime, uint256 _closingTime, Course[] memory _courses, string memory _imageURL, string memory _genre, string memory _description) public {
+        // essential data
+        setShopName(msg.sender, _name);
+        setopeningWeekDayss(msg.sender, _openingWeekDayss);
+        setShopOpeningTime(msg.sender, _openingTime, _closingTime);
+        setShopCourses(msg.sender, _courses);
+        // extra data
+        setExtraData(msg.sender, _name, _imageURL, _genre, _description);
+    }
 
-    function registerShopProperty(){}
-
-    function exists (uint256 _tokenId) public view returns (bool){
-        return _exists(_tokenId);
+    function setShopName(address _shopAddress, string memory _name) private {
+        shops[_shopAddress].name = _name;
+    }    
+    function setopeningWeekDayss(address _shopAddress, bool[7] memory _openingWeekDayss) private {
+        shops[_shopAddress].openingWeekDays = _openingWeekDayss;
+    }
+    function setShopOpeningTime(address _shopAddress, uint256 _openingTime, uint256 _closingTime) private {
+        shops[_shopAddress].openingTime = _openingTime;
+        shops[_shopAddress].closingTime = _closingTime;
+    }
+    function setShopCourses(address _shopAddress, Course[] memory _courses) private {
+        for(uint256 i;i<_courses.length;i++){
+            shops[_shopAddress].courses[i] = _courses[i];
+        }
+    }
+    function setExtraData(address _shopAddress, string memory _name, string memory _imageURL, string memory _genre, string memory _description) private {
+        ShopStatus storage shopStatus = shops[_shopAddress];
+        shopStatus.name = _name;
+        shopStatus.imageURL = _imageURL;
+        shopStatus.genre = _genre;
+        shopStatus.description = _description;
     }
 }

@@ -11,6 +11,10 @@ describe("Stake2Reserve", ()=>{
 
         return {owner, otherAccount, contract};
     }
+    const deployContractAndRegisterShopProperty = async()=>{
+        const {owner, otherAccount, contract} = loadFixture(deployContract);
+    }
+
     describe("NFT", ()=>{
         it("should mint a NFT to msg.sender", async ()=>{
             const {owner, contract} = await loadFixture(deployContract);
