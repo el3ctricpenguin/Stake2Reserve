@@ -24,7 +24,7 @@ describe("Stake2Reserve", ()=>{
             expect(await contract.exists(0)).to.equal(false);
         });
     });
-    describe("Time", ()=>{
+    describe("Week and Time", ()=>{
         describe("Week", ()=>{
             it("should return correct week day #1 (Saturday, 6)", async()=>{
                 const {contract} = await loadFixture(deployContract);
@@ -65,6 +65,28 @@ describe("Stake2Reserve", ()=>{
             it("should return correct diff time #4", async()=>{
                 const {contract} = await loadFixture(deployContract);
                 expect(await contract.getTime(new Date(Date.UTC(2025, 11-1, 2, 17+4, 16, 56)).getTime()/1000)).to.equal(new Date(Date.UTC(1970, 1-1, 1, 17, 16, 56)).getTime()/1000);
+            });
+        });
+    });
+    describe("Reservation", ()=>{
+        describe("require", ()=>{
+            it("should revert because of wrong week day", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                const reservationStartTime = new Date(Date.UTC(2023, 10-1, 2, 0+4, 30, 0)).getTime()/1000;
+                const reservationEndTime = new Date(Date.UTC(2023, 10-1, 2, 1+4, 30, 0)).getTime()/1000;
+                await expect(contract.reserve(ethers.ZeroAddress, reservationStartTime, reservationEndTime)).to.be.revertedWith("Shop is closed on the reservation date");
+            });
+            it("should revert because of wrong time", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 0+4, 30, 0)).getTime()/1000;
+                const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 1+4, 30, 0)).getTime()/1000;
+                await expect(contract.reserve(ethers.ZeroAddress, reservationStartTime, reservationEndTime)).to.be.revertedWith("Shop is closed on the reservation time");
+            });
+            it("should not be reverted", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
+                const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000;
+                await expect(contract.reserve(ethers.ZeroAddress, reservationStartTime, reservationEndTime)).not.to.be.reverted;
             });
         });
     });
