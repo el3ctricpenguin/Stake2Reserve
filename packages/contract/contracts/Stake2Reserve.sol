@@ -54,8 +54,12 @@ contract Stake2Reserve is ERC721URIStorage{
     }
 
     function reserve (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
+        
+        // Date & Time validation
         require(shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)], "Shop is closed on the reservation date");
         require(isReservationWithinOpeningTime(_shopAddress, _startingTime, _endingTime), "Shop is closed on the reservation time");
+        // TODO: Does the course exists?
+
         mintReservationNFT(_shopAddress, _startingTime, _endingTime, _guestCount, _courseId);
         // TODO: add an event
     }
@@ -74,10 +78,20 @@ contract Stake2Reserve is ERC721URIStorage{
         reservations[newItemId].guestCount = _guestCount;
         reservations[newItemId].courseId = _courseId;
 
-        string memory tokenURI = string(abi.encodePacked(
+        string memory tokenURI = makeTokenURI(_shopAddress, _startingTime, _endingTime, _guestCount, _courseId);
+        console.log(tokenURI);
+        _mint(msg.sender, newItemId);
+        _setTokenURI(newItemId, tokenURI);
+
+        _tokenIds.increment();
+    }
+
+    function makeTokenURI (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) private view returns(string memory) {
+        Course memory _course = shops[_shopAddress].courses[_courseId];
+        return string(abi.encodePacked("data:application/json;base64,", Base64.encode(abi.encodePacked(
             '{"name": "Stake2Reserve Reservation NFT",',
             '"description": "Penguin",',
-            '"image": "https://i.imgur.com/T2F51Kn.jpeg"",',
+            '"image": "https://i.imgur.com/T2F51Kn.jpeg",',
             '"attributes": [',
             '{"trait_type": "Shop Address",',
             '"value": "',Strings.toHexString(_shopAddress),'"},',
@@ -95,14 +109,9 @@ contract Stake2Reserve is ERC721URIStorage{
             '{"trait_type": "Course Id",',
             '"value": "',Strings.toString(_courseId),'"},',
             '{"trait_type": "Cancel Fee",',
-            '"value": "',Strings.toString(shops[_shopAddress].courses[_courseId].cancelFee),'"}',
-            ']',
-            '}'
-        ));
-        _mint(msg.sender, newItemId);
-        _setTokenURI(newItemId, tokenURI);
-
-        _tokenIds.increment();
+            '"value": "',Strings.toString(_course.cancelFee),'"}',
+            ']}'
+        ))));
     }
 
     function burnReservationNFT (uint256 _tokenId) public {
@@ -144,8 +153,6 @@ contract Stake2Reserve is ERC721URIStorage{
         // essential data
         setShopName(msg.sender, _name);
         setOpeningWeekDays(msg.sender, _openingWeekDays);
-        console.log("_openingWeekDays: ",_openingWeekDays[0]);
-        console.log("_openingWeekDays: ",_openingWeekDays[1]);
         setShopOpeningTime(msg.sender, _openingTime, _closingTime);
         setShopCourses(msg.sender, _courses);
         // extra data
