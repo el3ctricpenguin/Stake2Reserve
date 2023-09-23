@@ -13,6 +13,7 @@ import { rootLoader } from "./loader";
 import { configureChains, createConfig, sepolia, WagmiConfig } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
 import MyPage from "./routes/mypage";
+import { registrationAction } from "./action";
 
 const { publicClient, webSocketPublicClient } = configureChains(
   [sepolia],
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
       {
         path: "/restaurant/registration",
         element: <RestaurantRegistration />,
+        action: registrationAction,
       },
       {
         path: "/users/mypage",

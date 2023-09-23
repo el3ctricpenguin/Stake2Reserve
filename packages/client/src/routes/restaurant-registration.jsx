@@ -88,17 +88,19 @@ export default function RestaurantRegistration() {
 
             <FormControl>
               <FormLabel>Restaurant Genre</FormLabel>
-              <Select>
-                <option>Asian food</option>
-                <option>Chinese cuisine</option>
-                <option>Spanish cuisine</option>
-                <option>French cuisine</option>
-                <option>Italian cuisine</option>
-                <option>German cuisine</option>
-                <option>American cuisine</option>
-                <option>Mexican food</option>
-                <option>Japanease food</option>
-                <option>Other</option>
+              <Select
+                name="res-genre"
+                placeholder="Select genre"
+                defaultValue="American"
+              >
+                <option value="Asian">Asian food</option>
+                <option value="Cninese">Chinese cuisine</option>
+                <option value="Frence">French cuisine</option>
+                <option value="Italian">Italian cuisine</option>
+                <option value="American">American cuisine</option>
+                <option value="Mexican">Mexican food</option>
+                <option value="Japanease">Japanease food</option>
+                <option value="Other">Other</option>
               </Select>
             </FormControl>
 
@@ -339,8 +341,8 @@ export default function RestaurantRegistration() {
                 </FormLabel>
                 <FormLabel>
                   cancel fee ($)
-                  <NumberInput name="res-cancel1">
-                    <NumberInputField />
+                  <NumberInput>
+                    <NumberInputField name="res-cancel1" />
                     <NumberInputStepper>
                       <NumberIncrementStepper />
                       <NumberDecrementStepper />
@@ -360,8 +362,8 @@ export default function RestaurantRegistration() {
                 </FormLabel>
                 <FormLabel>
                   cancel fee ($)
-                  <NumberInput name="res-cancel2">
-                    <NumberInputField />
+                  <NumberInput>
+                    <NumberInputField name="res-cancel2" />
                     <NumberInputStepper>
                       <NumberIncrementStepper />
                       <NumberDecrementStepper />
