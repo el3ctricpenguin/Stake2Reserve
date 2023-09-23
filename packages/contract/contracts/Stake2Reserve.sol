@@ -213,4 +213,10 @@ contract Stake2Reserve is ERC721URIStorage{
         shopStatus.genre = _genre;
         shopStatus.description = _description;
     }
+    /*-------------------+
+    |    For Frontend    |
+    +-------------------*/
+    function getReservationData(uint256 _tokenId) public view returns(ReservationData memory) {
+        return reservations[_tokenId];
+    }
 }
