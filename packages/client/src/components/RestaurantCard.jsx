@@ -29,7 +29,9 @@ export default function RestaurantCard() {
         </CardBody>
         <Divider />
         <CardFooter padding="3">
-          <Text color="teal.400">Reserve</Text>
+          <Text fontWeight="semibold" color="red">
+            Reserve
+          </Text>
         </CardFooter>
       </Card>
     </LinkBox>

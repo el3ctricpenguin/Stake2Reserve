@@ -1,16 +1,34 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { ChakraProvider } from "@chakra-ui/react";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
-import Root from "./routes/root";
+import { ChakraProvider } from "@chakra-ui/react";
+
 import Index from "./routes";
+import Root from "./routes/root";
 import Restaurant from "./routes/restaurant";
 import RestaurantRegistration from "./routes/restaurant-registration";
+
+import { rootLoader } from "./loader";
+
+import { configureChains, createConfig, sepolia, WagmiConfig } from "wagmi";
+import { publicProvider } from "wagmi/providers/public";
+
+const { publicClient, webSocketPublicClient } = configureChains(
+  [sepolia],
+  [publicProvider()]
+);
+
+const config = createConfig({
+  autoConnect: true,
+  publicClient,
+  webSocketPublicClient,
+});
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Root />,
+    loader: rootLoader,
     children: [
       {
         index: true,
@@ -31,7 +49,9 @@ const router = createBrowserRouter([
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ChakraProvider>
-      <RouterProvider router={router} />
+      <WagmiConfig config={config}>
+        <RouterProvider router={router} />
+      </WagmiConfig>
     </ChakraProvider>
   </React.StrictMode>
 );

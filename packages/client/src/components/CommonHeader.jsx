@@ -2,73 +2,38 @@ import {
   Box,
   Button,
   ButtonGroup,
-  Container,
   Flex,
   Heading,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Spacer,
-  VStack,
   useDisclosure,
-  Link as ChackraLink,
 } from "@chakra-ui/react";
-import { MetaMaskIcon } from "./Icon";
-import { Link } from "react-router-dom";
+import ConnectModal from "./ConnectModal";
+import { useAccount } from "wagmi";
 
-export default function CommonHeader() {
+// eslint-disable-next-line react/prop-types
+export default function CommonHeader({ hasConnected, checkAccount }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { address, isConnected } = useAccount();
+
+  function compactAddress(addr) {
+    return addr.slice(0, 4) + "..." + addr.slice(-4);
+  }
+
+  function renderConnectButton() {
+    if (isConnected) return <Button>{compactAddress(address)}</Button>;
+    if (hasConnected) return <Button>{compactAddress(checkAccount)}</Button>;
+    return <Button onClick={onOpen}>Connect Wallet</Button>;
+  }
+
   return (
     <Flex minWidth="max-content" alignItems="center" gap="2" padding="4">
       <Box p="2">
         <Heading size="md">stake2reserve</Heading>
       </Box>
       <Spacer />
-      <ButtonGroup gap="2">
-        <Button onClick={onOpen} colorScheme="teal">
-          Connected Wallet
-        </Button>
-      </ButtonGroup>
-      {/* Modal ----= */}
-      <Modal onClose={onClose} isOpen={isOpen} isCentered>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Connect a wallet</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody py="2">
-            <Container maxW="xl" centerContent>
-              <VStack>
-                <Button onClick={onClose} minWidth="240px" height="60px">
-                  <MetaMaskIcon width="40px" height="40px" />
-                  <Box
-                    fontWeight="semibold"
-                    letterSpacing="wide"
-                    fontSize="lg"
-                    ml="4"
-                  >
-                    MetaMask
-                  </Box>
-                </Button>
-                <p>or</p>
-                <ChackraLink
-                  as={Link}
-                  to="restaurant/registration"
-                  onClick={onClose}
-                >
-                  <u>Register to your restaurant</u>
-                </ChackraLink>
-              </VStack>
-            </Container>
-          </ModalBody>
-          <ModalFooter>
-            <Button onClick={onClose}>Close</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      <ButtonGroup gap="2">{renderConnectButton()}</ButtonGroup>
+      {/* Modal Modal Modal */}
+      <ConnectModal isOpen={isOpen} onClose={onClose} />
     </Flex>
   );
 }
