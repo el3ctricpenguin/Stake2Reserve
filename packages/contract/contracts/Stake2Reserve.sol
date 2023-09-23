@@ -89,7 +89,7 @@ contract Stake2Reserve is ERC721URIStorage{
         reservations[newItemId].courseId = _courseId;
 
         string memory tokenURI = makeTokenURI(_shopAddress, _startingTime, _endingTime, _guestCount, _courseId);
-        console.log(tokenURI);
+        // console.log(tokenURI);
         _mint(msg.sender, newItemId);
         _setTokenURI(newItemId, tokenURI);
 

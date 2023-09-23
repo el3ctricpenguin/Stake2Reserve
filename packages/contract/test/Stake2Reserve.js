@@ -5,15 +5,15 @@ const { expect } = require('chai');
 describe("Stake2Reserve", ()=>{
     const deployContract = async()=>{
         const {usdc} = await loadFixture(deployUSDC);
-        console.log(usdc);
+        // console.log(usdc);
         const [owner, otherAccount] = await ethers.getSigners();
         contractFactory = await ethers.getContractFactory("Stake2Reserve");
         contract = await contractFactory.deploy(usdc.target);
         await contract.waitForDeployment();
-        return {owner, otherAccount, contract};
+        return {owner, otherAccount, contract, usdc};
     };
     const deployedContractAndRegisteredShopProperty = async()=>{
-        const {owner, otherAccount, contract} = await loadFixture(deployContract);
+        const {owner, otherAccount, contract, usdc} = await loadFixture(deployContract);
         const _name = "Shop Name Here";
         const openingWeekDays = [true, false, true, true, true, true, true]; // only closed on Monday
         const openingTime = 60*60*10; // from 10am
@@ -23,19 +23,20 @@ describe("Stake2Reserve", ()=>{
         const genre = "Japanese Food";
         const description = "ZenBite Sushi is a fictional sushi restaurant with a serene garden ambiance. Their menu includes both traditional and innovative sushi rolls, prepared by expert chefs at an open bar, providing a unique dining experience.";
         await contract.registerShopProperty(_name, openingWeekDays, openingTime, closingTime, courses, imageURL, genre, description);
-        return {owner, otherAccount, contract};
+        return {owner, otherAccount, contract, usdc};
     };
     const deployedContractAndRegisteredShopPropertyAndReservedSome = async()=>{
-        const {owner, otherAccount, contract} = await loadFixture(deployedContractAndRegisteredShopProperty);
+        const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopProperty);
         await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000, 2, 0);
         await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 6, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 6, 11+4, 0, 0)).getTime()/1000, 2, 1);
-        return {owner, otherAccount, contract};
+        return {owner, otherAccount, contract, usdc};
     };
     const deployUSDC = async()=>{
-        const [owner] = await ethers.getSigners();
+        const [owner, otherAccount] = await ethers.getSigners();
         const usdcFactory = await ethers.getContractFactory("MockUSDC");
         const usdc = await usdcFactory.deploy("MockUSDC", "USDC", 10**10, owner.address);
         await usdc.waitForDeployment();
+        await usdc.transfer(otherAccount, 100*(10**6));
         return {usdc};
     }
 
@@ -133,6 +134,23 @@ describe("Stake2Reserve", ()=>{
             it("should be reverted because of lack of setPaymentAmount setting", async()=>{
                 const {owner, otherAccount, contract} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
                 await expect(contract.connect(otherAccount).checkOut(0)).to.be.revertedWith("paymentAmount is not set");
+            });
+            it("should be reverted because of lack of USDC balance", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                await contract.setPaymentAmount(0, 200);
+                await usdc.connect(otherAccount).transfer(owner.address, 100*(10**6));
+                await expect(contract.connect(otherAccount).checkOut(0)).to.be.revertedWith("Insufficient USDC Balance");
+            });
+            it("should be reverted because of lack of USDC allowance", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                await contract.setPaymentAmount(0, 200);
+                await expect(contract.connect(otherAccount).checkOut(0)).to.be.revertedWith("Insufficient USDC Allowance");
+            });
+            it("should not be reverted", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                await contract.setPaymentAmount(0, 200);
+                await usdc.connect(otherAccount).approve(contract.target, 100*(10**6));
+                await expect(contract.connect(otherAccount).checkOut(0)).not.to.be.reverted;
             });
         });
     });
