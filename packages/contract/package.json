@@ -9,5 +9,8 @@
     "deploy:sepolia": "npx hardhat run scripts/deploy.js --network sepolia",
     "compile": "npx hardhat compile",
     "test": "npx hardhat test"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.3"
   }
 }
