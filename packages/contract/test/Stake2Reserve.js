@@ -25,27 +25,47 @@ describe("Stake2Reserve", ()=>{
         });
     });
     describe("Time", ()=>{
-        it("should return correct week day #1 (Saturday, 6)", async()=>{
-            const {contract} = await loadFixture(deployContract);
-            // in Date.UTC, 0 is January, 11 is December
-            console.log("01/01/2023 (NY, Unix Time): ", new Date(Date.UTC(2023, 1-1, 1, 0+4, 0, 0)).getTime()/1000);
-            console.log("23/09/2023 (NY, Unix Time): ", new Date(Date.UTC(2023, 9-1, 23, 0+4, 45, 40)).getTime()/1000);
-            expect(await contract.getWeekDay(new Date(Date.UTC(2023, 9-1, 23, 0+4, 45, 40)).getTime()/1000)).to.equal(6);
+        describe("Week", ()=>{
+            it("should return correct week day #1 (Saturday, 6)", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                // in Date.UTC, 0 is January, 11 is December
+                console.log("01/01/2023 (NY, Unix Time): ", new Date(Date.UTC(2023, 1-1, 1, 0+4, 0, 0)).getTime()/1000);
+                console.log("23/09/2023 (NY, Unix Time): ", new Date(Date.UTC(2023, 9-1, 23, 0+4, 45, 40)).getTime()/1000);
+                expect(await contract.getWeekDay(new Date(Date.UTC(2023, 9-1, 23, 0+4, 45, 40)).getTime()/1000)).to.equal(6);
+            });
+            it("should return correct week day #2 (Wendesday, 3)", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                // in Date.UTC, 0 is January, 11 is December
+                expect(await contract.getWeekDay(new Date(Date.UTC(2023, 9-1, 13, 9+4, 15, 1)).getTime()/1000)).to.equal(3);
+            });
+            it("should return correct week day #3 (Wendesday, 0)", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                // in Date.UTC, 0 is January, 11 is December
+                expect(await contract.getWeekDay(new Date(Date.UTC(2024, 5-1, 5, 3+4, 23, 51)).getTime()/1000)).to.equal(0);
+            });
+            it("should return correct week day #4 (Friday, 5)", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                // in Date.UTC, 0 is January, 11 is December
+                expect(await contract.getWeekDay(new Date(Date.UTC(2024, 12-1, 27, 19+4, 2, 1)).getTime()/1000)).to.equal(5);
+            });
         });
-        it("should return correct week day #2 (Wendesday, 3)", async()=>{
-            const {contract} = await loadFixture(deployContract);
-            // in Date.UTC, 0 is January, 11 is December
-            expect(await contract.getWeekDay(new Date(Date.UTC(2023, 9-1, 13, 9+4, 15, 1)).getTime()/1000)).to.equal(3);
-        });
-        it("should return correct week day #3 (Wendesday, 0)", async()=>{
-            const {contract} = await loadFixture(deployContract);
-            // in Date.UTC, 0 is January, 11 is December
-            expect(await contract.getWeekDay(new Date(Date.UTC(2024, 5-1, 5, 3+4, 23, 51)).getTime()/1000)).to.equal(0);
-        });
-        it("should return correct week day #4 (Friday, 5)", async()=>{
-            const {contract} = await loadFixture(deployContract);
-            // in Date.UTC, 0 is January, 11 is December
-            expect(await contract.getWeekDay(new Date(Date.UTC(2024, 12-1, 27, 19+4, 2, 1)).getTime()/1000)).to.equal(5);
+        describe("Time", ()=>{
+            it("should return correct diff time #1", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                expect(await contract.getTime(new Date(Date.UTC(2023, 9-1, 23, 0+4, 45, 40)).getTime()/1000)).to.equal(new Date(Date.UTC(1970, 1-1, 1, 0, 45, 40)).getTime()/1000);
+            });
+            it("should return correct diff time #2", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                expect(await contract.getTime(new Date(Date.UTC(2023, 2-1, 3, 5+4, 15, 0)).getTime()/1000)).to.equal(new Date(Date.UTC(1970, 1-1, 1, 5, 15, 0)).getTime()/1000);
+            });
+            it("should return correct diff time #3", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                expect(await contract.getTime(new Date(Date.UTC(2024, 9-1, 4, 3+4, 34, 21)).getTime()/1000)).to.equal(new Date(Date.UTC(1970, 1-1, 1, 3, 34, 21)).getTime()/1000);
+            });
+            it("should return correct diff time #4", async()=>{
+                const {contract} = await loadFixture(deployContract);
+                expect(await contract.getTime(new Date(Date.UTC(2025, 11-1, 2, 17+4, 16, 56)).getTime()/1000)).to.equal(new Date(Date.UTC(1970, 1-1, 1, 17, 16, 56)).getTime()/1000);
+            });
         });
     });
 });

@@ -45,14 +45,15 @@ contract Stake2Reserve is ERC721URIStorage{
 
     function getWeekDay(uint256 _unixTime) public view returns(uint256){
         uint256 diffTimeYear = _unixTime - NY_SUMMER_TIME_2023_01_01; // seconds from 2023/01/01 (NY Summertime, Sunday)
-        console.log("diffTimeYear", diffTimeYear);
-        console.log(diffTimeYear/(60*60*24*7));
         uint256 diffTimeWeek = diffTimeYear%(60*60*24*7);
-        console.log("diffTimeWeek", diffTimeWeek);
-        console.log("week", diffTimeWeek/(60*60*24));
         uint256 week = uint256(diffTimeWeek/(60*60*24));
-        console.log("week", week);
         return week;
+    }
+
+    function getTime(uint256 _unixTime) public view returns(uint256){
+        uint256 diffTimeYear = _unixTime - NY_SUMMER_TIME_2023_01_01; // seconds from 2023/01/01 (NY Summertime, Sunday)
+        uint256 diffTimeDay = uint256(diffTimeYear%(60*60*24));
+        return diffTimeDay;
     }
 
     function exists (uint256 _tokenId) public view returns (bool){
