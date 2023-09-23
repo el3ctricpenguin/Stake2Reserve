@@ -4,9 +4,11 @@ const { expect } = require('chai');
 
 describe("Stake2Reserve", ()=>{
     const deployContract = async()=>{
+        const {usdc} = await loadFixture(deployUSDC);
+        console.log(usdc);
         const [owner, otherAccount] = await ethers.getSigners();
         contractFactory = await ethers.getContractFactory("Stake2Reserve");
-        contract = await contractFactory.deploy();
+        contract = await contractFactory.deploy(usdc.target);
         await contract.waitForDeployment();
         return {owner, otherAccount, contract};
     };
@@ -29,6 +31,13 @@ describe("Stake2Reserve", ()=>{
         await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 6, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 6, 11+4, 0, 0)).getTime()/1000, 2, 1);
         return {owner, otherAccount, contract};
     };
+    const deployUSDC = async()=>{
+        const [owner] = await ethers.getSigners();
+        const usdcFactory = await ethers.getContractFactory("MockUSDC");
+        const usdc = await usdcFactory.deploy("MockUSDC", "USDC", 10**10, owner.address);
+        await usdc.waitForDeployment();
+        return {usdc};
+    }
 
     describe("NFT", ()=>{
         // it("should mint a NFT to msg.sender", async ()=>{
@@ -118,6 +127,12 @@ describe("Stake2Reserve", ()=>{
             it("should not be reverted", async()=>{
                 const {owner, otherAccount, contract} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
                 await expect(contract.setPaymentAmount(0, 200)).not.to.be.reverted;
+            });
+        });
+        describe("checkOut", ()=>{
+            it("should be reverted because of lack of setPaymentAmount setting", async()=>{
+                const {owner, otherAccount, contract} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                await expect(contract.connect(otherAccount).checkOut(0)).to.be.revertedWith("paymentAmount is not set");
             });
         });
     });

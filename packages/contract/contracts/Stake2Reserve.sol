@@ -4,6 +4,7 @@ pragma solidity ^0.8.19;
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -14,6 +15,7 @@ contract Stake2Reserve is ERC721URIStorage{
     Counters.Counter private _tokenIds;
 
     uint256 NY_SUMMER_TIME_2023_01_01 = 1672545600;
+    ERC20 USDC;
 
     /*--------------+
     |   Variables   |
@@ -48,20 +50,25 @@ contract Stake2Reserve is ERC721URIStorage{
         uint256 guestCount;
         uint256 courseId;
         uint256 paymentAmount;
+        bool isCheckedOut;
     }
 
 
-    constructor() ERC721("Stake2Reserve NFT", "S2R"){
+    constructor(address _USDCAddress) ERC721("Stake2Reserve NFT", "S2R"){
+        console.log(_USDCAddress);
+        USDC = ERC20(_USDCAddress);
     }
 
     function reserve (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
         
         // Date & Time validation
-        console.log("getWeekDay(_startingTime): ",getWeekDay(_startingTime));
-        console.log("shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)]: ",shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)]);
+        // console.log("getWeekDay(_startingTime): ",getWeekDay(_startingTime));
+        // console.log("shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)]: ",shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)]);
         require(shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)], "Shop is closed on the reservation date");
         require(isReservationWithinOpeningTime(_shopAddress, _startingTime, _endingTime), "Shop is closed on the reservation time");
         // TODO: Does the course exists?
+
+        // depositStakeToAave()
 
         mintReservationNFT(_shopAddress, _startingTime, _endingTime, _guestCount, _courseId);
         // TODO: add an event
@@ -154,6 +161,20 @@ contract Stake2Reserve is ERC721URIStorage{
     function setPaymentAmount(uint256 _tokenId, uint256 _paymentAmount) public {
         require(msg.sender == reservations[_tokenId].shopAddress, "msg.sender should be the shop owner");
         reservations[_tokenId].paymentAmount = _paymentAmount;
+    }
+
+    function checkOut(uint256 _tokenId) public {
+        uint256 customerPaymentAmount = reservations[_tokenId].paymentAmount;
+        // check if Payment Amount is registered
+        require(customerPaymentAmount>0, "paymentAmount is not set");
+        // check if enough USDC customer has
+        require(USDC.balanceOf(msg.sender) >= customerPaymentAmount, "Insufficient USDC Balance");
+        // check if enough USDC allowance the contract has
+        require(USDC.allowance(msg.sender, address(this)) >= customerPaymentAmount, "Insufficient USDC Allowance");
+        
+        // withdrawStakeFromAave()
+        
+        // convertReservationNFTtoVisitedNFT()
     }
 
     /*-------------------------+
