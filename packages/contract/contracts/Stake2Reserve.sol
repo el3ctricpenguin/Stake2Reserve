@@ -119,10 +119,7 @@ contract Stake2Reserve is ERC721URIStorage{
         shops[_shopAddress].name = _name;
     }    
     function setOpeningWeekDays(address _shopAddress, bool[7] memory _openingWeekDays) private {
-        bool[7] storage openingWeekDays = shops[_shopAddress].openingWeekDays;
-        for (uint i;i<openingWeekDays.length;i++){
-            openingWeekDays[i] = _openingWeekDays[i];
-        }
+        shops[_shopAddress].openingWeekDays = _openingWeekDays;
     }
     function setShopOpeningTime(address _shopAddress, uint256 _openingTime, uint256 _closingTime) private {
         shops[_shopAddress].openingTime = _openingTime;
