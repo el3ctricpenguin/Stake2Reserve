@@ -21,7 +21,7 @@ export default function RestaurantCard() {
           <Image src="/nyc01.jpg" alt="Restaurant Name" borderRadius="lg" />
           <Stack mt="6" spacing="2">
             <Tag maxW="fit-content">Restaurant Genre</Tag>
-            <LinkOverlay as={Link} to="/">
+            <LinkOverlay as={Link} to="/restaurant/1">
               <Heading size="lg">Restaurant Name Great rolePaaris</Heading>
             </LinkOverlay>
             <Text>Restaurant Description</Text>
