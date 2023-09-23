@@ -1,0 +1,10 @@
+{
+  "name": "stake2reserve",
+  "version": "0.1.0",
+  "description": "Stake to Reserve",
+  "license": "MIT",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
+}
