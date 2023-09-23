@@ -9,19 +9,31 @@ import {
 } from "@chakra-ui/react";
 import ConnectModal from "./ConnectModal";
 import { useAccount } from "wagmi";
+import { useNavigate } from "react-router-dom";
 
 // eslint-disable-next-line react/prop-types
 export default function CommonHeader({ hasConnected, checkAccount }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { address, isConnected } = useAccount();
+  const navigate = useNavigate();
 
   function compactAddress(addr) {
     return addr.slice(0, 4) + "..." + addr.slice(-4);
   }
 
+  function addressOnClick() {
+    navigate("users/mypage");
+  }
+
   function renderConnectButton() {
-    if (isConnected) return <Button>{compactAddress(address)}</Button>;
-    if (hasConnected) return <Button>{compactAddress(checkAccount)}</Button>;
+    if (isConnected)
+      return (
+        <Button onClick={addressOnClick}>{compactAddress(address)}</Button>
+      );
+    if (hasConnected)
+      return (
+        <Button onClick={addressOnClick}>{compactAddress(checkAccount)}</Button>
+      );
     return <Button onClick={onOpen}>Connect Wallet</Button>;
   }
 
