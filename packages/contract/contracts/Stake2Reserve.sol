@@ -21,6 +21,8 @@ contract Stake2Reserve {
 
     address S2RAaveAddress;
 
+    uint256 USDC_DECIMAL = 10**6;
+
     /*--------------+
     |   Variables   |
     +--------------*/
@@ -87,15 +89,17 @@ contract Stake2Reserve {
 
         // check if custormer can pay the cancel fee
         uint256 cancelFee = shops[_shopAddress].courses[_courseId].cancelFee;
-        require(USDC.balanceOf(msg.sender) >= cancelFee, "Insufficient USDC Balance");
+        require(USDC.balanceOf(msg.sender) >= cancelFee*USDC_DECIMAL, "Insufficient USDC Balance");
         require(USDC.allowance(msg.sender, address(this)) >= cancelFee, "Insufficient USDC Allowance");
-
-        // USDC.transferFrom(msg.sender, address(this), cancelFee); // don't know why but require doesn't work well
-
+        console.log("allowance",USDC.allowance(msg.sender, address(this)));
+        console.log("cancelFee",cancelFee*USDC_DECIMAL);
+        USDC.transferFrom(msg.sender, address(this), cancelFee*USDC_DECIMAL); // don't know why but require doesn't work well
+        console.log("done");
         uint256 newItemId = _tokenIds.current();
 
-        USDC.approve(S2RAaveAddress, cancelFee);
-        aave.supplyUSDCToAave(newItemId, cancelFee);
+        USDC.approve(S2RAaveAddress, cancelFee*USDC_DECIMAL);
+        require(USDC.allowance(address(this), S2RAaveAddress) >= cancelFee*USDC_DECIMAL, "Insufficient USDC Allowance AAVE");
+        aave.supplyUSDCToAave(newItemId, cancelFee*USDC_DECIMAL);
 
         // set parameters
         reservations[newItemId].shopAddress = _shopAddress;
@@ -146,19 +150,39 @@ contract Stake2Reserve {
 
     function checkOut(uint256 _tokenId) public {
         address customerAddress = s2r.ownerOf(_tokenId);
-        uint256 customerPaymentAmount = reservations[_tokenId].paymentAmount;
+        ReservationData memory reservation = reservations[_tokenId];
+        uint256 cancelFee = shops[reservation.shopAddress].courses[reservation.courseId].cancelFee;
+        uint256 paymentTotalAmount = reservations[_tokenId].paymentAmount;
+        uint256 customerPaymentAmount = paymentTotalAmount - cancelFee;
         // check if Payment Amount is registered
-        require(customerPaymentAmount>0, "paymentAmount is not set");
+        require(paymentTotalAmount>0, "paymentAmount is not set");
         // check if enough USDC customer has
         require(USDC.balanceOf(msg.sender) >= customerPaymentAmount, "Insufficient USDC Balance");
         // check if enough USDC allowance the contract has
         require(USDC.allowance(msg.sender, address(this)) >= customerPaymentAmount, "Insufficient USDC Allowance");
         
-        // withdrawStakeFromAave()
+
+        aave.withdrawUSDCFromAave(_tokenId, cancelFee*USDC_DECIMAL);
+
+        s2r.convertReservationNFTtoVisitedNFT(_tokenId, reservation.shopAddress, reservation.shopName, reservation.startingTime, reservation.endingTime, reservation.guestCount, reservation.courseId, shops[reservation.shopAddress].courses[reservation.courseId].cancelFee);
         
-        // convertReservationNFTtoVisitedNFT()
+        USDC.transferFrom(msg.sender, address(this),(customerPaymentAmount)*USDC_DECIMAL);
+        USDC.transfer(reservations[_tokenId].shopAddress, paymentTotalAmount*USDC_DECIMAL);
         reservations[_tokenId].isCheckedOut = true;
         emit CheckOut(_tokenId, customerPaymentAmount, customerAddress);
+    }
+
+    function withdrawCancelFee(uint256 _tokenId) public {
+        require(reservations[_tokenId].shopAddress==msg.sender, "msg.sender is not shop owner");
+        require(!reservations[_tokenId].isCheckedOut, "The reservation is already checked out");
+        require(reservations[_tokenId].endingTime+60*60*12 < block.timestamp, "Cancel fee withdrawal starts reservationEndTime + 0.5 days");
+        
+        ReservationData memory reservation = reservations[_tokenId];
+        uint256 cancelFee = shops[reservation.shopAddress].courses[reservation.courseId].cancelFee;
+        aave.withdrawUSDCFromAave(_tokenId, cancelFee);
+        USDC.transfer(reservations[_tokenId].shopAddress, cancelFee);
+
+        s2r.burnReservationNFT(_tokenId);
     }
 
     /*-------------------------+

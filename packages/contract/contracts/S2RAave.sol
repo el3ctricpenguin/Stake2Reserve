@@ -8,6 +8,9 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 // import "../aave-address-book/src/AaveV3Sepolia.sol";
 
 contract S2RAave{
+    /*-------------------------------+
+    |  CHANGE IT HERE WHEN DEPLOY!!  |
+    +-------------------------------*/
     address AAVE_POOL_ADDRESS = 0x6Ae43d3271ff6888e7Fc43Fd7321a503ff738951;
     address USDC_ADDRESS = 0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8;
     address USDC_A_TOKEN = 0x16dA4541aD1807f4443d92D26044C1147406EB80;
@@ -27,19 +30,24 @@ contract S2RAave{
     function supplyUSDCToAave(uint256 _tokenId, uint256 _amount) public {
         require(USDC.balanceOf(msg.sender) >= _amount, "Insufficient USDC Balance");
         require(USDC.allowance(msg.sender, address(this)) >= _amount, "Insufficient USDC Allowance");
+        // require(1 > 2, "just before transferFrom");
         USDC.transferFrom(msg.sender, address(this), _amount);
+        // require(1 > 2, "just before approve");
         USDC.approve(AAVE_POOL_ADDRESS, _amount);
-        IPool(aavePool).supply(USDC_ADDRESS, _amount, address(this), 0);
+        // require(1 > 2, "just before supply");
+        aavePool.supply(USDC_ADDRESS, _amount, address(this), 0);
         
-        addStake(_tokenId, _amount);
+        // addStake(_tokenId, _amount);
         emit SupplyUSDCToAave(msg.sender, _amount);
     }
-    function withdrawUSDCFromAave(uint256 _tokenId) public {
-        uint256 stakedAmount = getCurrentStake(_tokenId);
-        removeStake(_tokenId, getStake(_tokenId));
-        IPool(aavePool).withdraw(USDC_ADDRESS, stakedAmount, address(this));
-        USDC.transfer(msg.sender, stakedAmount);
-        emit WithdrawUSDCFromAave(msg.sender, stakedAmount);
+    function withdrawUSDCFromAave(uint256 _tokenId, uint256 _amount) public {
+        // uint256 stakedAmount = getCurrentStake(_tokenId);
+        // removeStake(_tokenId, getStake(_tokenId));
+        aUSDC.approve(AAVE_POOL_ADDRESS, _amount);
+        aavePool.withdraw(USDC_ADDRESS, _amount, address(this));
+        // require(1>2, "just before transfer");
+        USDC.transfer(msg.sender, _amount);
+        emit WithdrawUSDCFromAave(msg.sender, _amount);
     }
 
     function addStake(uint256 _tokenId, uint256 _amount) private {

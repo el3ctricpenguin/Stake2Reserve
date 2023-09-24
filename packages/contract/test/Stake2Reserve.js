@@ -1,14 +1,15 @@
 const { loadFixture, time } = require('@nomicfoundation/hardhat-network-helpers');
 const { ethers } = require('hardhat');
 const { expect } = require('chai');
+// Aave doesn't exist in localchain
 
 describe("Stake2Reserve", ()=>{
     const deployContract = async()=>{
-        const {usdc, S2RNFT} = await loadFixture(deployUSDCAndS2RNFT);
+        const {usdc, S2RNFT, S2RAave} = await loadFixture(deployUSDCAndS2RNFT);
         // console.log(usdc);
         const [owner, otherAccount] = await ethers.getSigners();
         contractFactory = await ethers.getContractFactory("Stake2Reserve");
-        contract = await contractFactory.deploy(usdc.target, S2RNFT.target);
+        contract = await contractFactory.deploy(usdc.target, S2RNFT.target, S2RAave.target);
         await contract.waitForDeployment();
         return {owner, otherAccount, contract, usdc};
     };
@@ -42,7 +43,11 @@ describe("Stake2Reserve", ()=>{
         const S2RNFTFactory = await ethers.getContractFactory("S2RNFT");
         const S2RNFT = await S2RNFTFactory.deploy();
         await S2RNFT.waitForDeployment();
-        return {usdc, S2RNFT};
+
+        const S2RAaveFactory = await ethers.getContractFactory("S2RAave");
+        const S2RAave = await S2RAaveFactory.deploy();
+        await S2RAave.waitForDeployment();
+        return {usdc, S2RNFT, S2RAave};
     }
 
     describe("NFT", ()=>{
@@ -157,7 +162,9 @@ describe("Stake2Reserve", ()=>{
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000;
                 await usdc.approve(contract.target, 100*(10**6));
-                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).not.to.be.reverted;
+                console.log(await usdc.balanceOf(owner.address));
+                console.log(await usdc.allowance(owner.address, contract.target));
+                expect(await contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 0)).not.to.be.reverted;
             });
         });
     });
