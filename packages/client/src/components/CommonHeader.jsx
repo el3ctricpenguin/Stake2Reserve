@@ -1,40 +1,43 @@
 import {
   Box,
   Button,
-  ButtonGroup,
   Flex,
   Heading,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuList,
   Spacer,
   useDisclosure,
 } from "@chakra-ui/react";
 import ConnectModal from "./ConnectModal";
-import { useAccount } from "wagmi";
+import { useAccount, useDisconnect } from "wagmi";
 import { Link, useNavigate } from "react-router-dom";
 
 // eslint-disable-next-line react/prop-types
 export default function CommonHeader({ hasConnected, checkAccount }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { address, isConnected } = useAccount();
+  const { disconnect } = useDisconnect();
   const navigate = useNavigate();
+
+  function moveMyPage() {
+    navigate("/users/mypage");
+  }
+
+  function disconnectWallet() {
+    disconnect();
+    navigate("/");
+  }
 
   function compactAddress(addr) {
     return addr.slice(0, 4) + "..." + addr.slice(-4);
   }
 
-  function addressOnClick() {
-    navigate("users/mypage");
-  }
-
-  function renderConnectButton() {
-    if (isConnected)
-      return (
-        <Button onClick={addressOnClick}>{compactAddress(address)}</Button>
-      );
-    if (hasConnected)
-      return (
-        <Button onClick={addressOnClick}>{compactAddress(checkAccount)}</Button>
-      );
-    return <Button onClick={onOpen}>Connect Wallet</Button>;
+  function renderButtonText() {
+    if (isConnected) return compactAddress(address);
+    if (hasConnected) return compactAddress(checkAccount);
+    return "Connect Wallet";
   }
 
   return (
@@ -45,7 +48,17 @@ export default function CommonHeader({ hasConnected, checkAccount }) {
         </Link>
       </Box>
       <Spacer />
-      <ButtonGroup gap="2">{renderConnectButton()}</ButtonGroup>
+      {isConnected || hasConnected ? (
+        <Menu>
+          <MenuButton as={Button}>{renderButtonText()}</MenuButton>
+          <MenuList>
+            <MenuItem onClick={moveMyPage}>MyPage</MenuItem>
+            <MenuItem onClick={disconnectWallet}>Disconnected</MenuItem>
+          </MenuList>
+        </Menu>
+      ) : (
+        <Button onClick={onOpen}>{renderButtonText()}</Button>
+      )}
       {/* Modal Modal Modal */}
       <ConnectModal isOpen={isOpen} onClose={onClose} />
     </Flex>

@@ -1,5 +1,4 @@
 export async function rootLoader() {
-  console.log("Load Root!");
   let hasConnected = false;
   let account = "";
   let { ethereum } = window;
