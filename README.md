@@ -20,6 +20,13 @@ verified on https://sepolia-blockscout.scroll.io/address/0x31Ab62952C588F06f47Fc
 S2RAave Contract:  0x69Bc8AaEC8F56AD4fD4b917DE75f007d19cd26BD
 verified on https://sepolia-blockscout.scroll.io/address/0x69Bc8AaEC8F56AD4fD4b917DE75f007d19cd26BD#code
 ```
+### Base Gorli
+
+```
+Stake2Reserve Contract:  0x59B8eA6b2D778104F989dB15aa3a2DFd28f1fC3C
+S2RNFT Contract:  0xA7e08eD02be61bD399EB1399073761B3525BB974
+S2RAave Contract:  0xD5F02e141841756ff63C24bc5f041189F1c1f344
+```
 
 
 ## How to Develop
