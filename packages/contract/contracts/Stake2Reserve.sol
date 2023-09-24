@@ -5,6 +5,7 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./S2RNFT.sol";
+import "./S2RAave.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 
@@ -16,7 +17,7 @@ contract Stake2Reserve {
     uint256 penaltyStartTime = 60*60*12;
     ERC20 USDC;
     S2RNFT s2r;
-
+    S2RAave aave;
 
     /*--------------+
     |   Variables   |
@@ -59,10 +60,11 @@ contract Stake2Reserve {
     event SetPaymentAmount(uint256 tokenId, uint256 paymentAmount, address shopAddress);
     event CheckOut(uint256 tokenId, uint256 customerPaymentAmount, address customerAddress);
 
-    constructor(address _USDCAddress, address _S2RNFTAddress){
+    constructor(address _USDCAddress, address _S2RNFTAddress, _S2RAaveAddress){
         console.log(_USDCAddress);
         USDC = ERC20(_USDCAddress);
         s2r = S2RNFT(_S2RNFTAddress);
+        aave = S2RAave(_S2RAaveAddress);
     }
 
     function reserve (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
@@ -85,6 +87,8 @@ contract Stake2Reserve {
         require(USDC.allowance(msg.sender, address(this)) >= cancelFee, "Insufficient USDC Allowance");
 
         // USDC.transferFrom(msg.sender, address(this), cancelFee); // don't know why but require doesn't work well
+        USDC.approve(cancelFee)l
+        depositStakeToAave()
 
         // depositStakeToAave()
 
