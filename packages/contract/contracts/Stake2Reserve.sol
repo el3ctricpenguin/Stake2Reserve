@@ -137,6 +137,35 @@ contract Stake2Reserve is ERC721URIStorage{
         ))));
     }
 
+    function convertReservationNFTtoVisitedNFT (uint256 _tokenId) public {
+        string memory tokenURI = string(abi.encodePacked("data:application/json;base64,", Base64.encode(abi.encodePacked(
+            '{"name": "Stake2Reserve Visited NFT",',
+            '"description": "Visited NFT description",',
+            '"image": "https://i.imgur.com/0mFSlbG.jpeg",',
+            '"attributes": [',
+            '{"trait_type": "Shop Address",',
+            '"value": "',Strings.toHexString(reservations[_tokenId].shopAddress),'"},',
+            '{"trait_type": "Shop Name",',
+            '"value": "',reservations[_tokenId].shopName,'"},',
+            '{"trait_type": "Reservation Date",',
+            '"display_type": "date",',
+            '"value": "',Strings.toString(reservations[_tokenId].startingTime),'"},',
+            '{"trait_type": "Reservation Start Time",',
+            '"value": "',Strings.toString(reservations[_tokenId].startingTime),'"},',
+            '{"trait_type": "Reservation End Time",',
+            '"value": "',Strings.toString(reservations[_tokenId].endingTime),'"},',
+            '{"trait_type": "Guest Count",',
+            '"value": "',Strings.toString(reservations[_tokenId].guestCount),'"},',
+            '{"trait_type": "Course Id",',
+            '"value": "',Strings.toString(reservations[_tokenId].courseId),'"},',
+            '{"trait_type": "Cancel Fee",',
+            '"value": "',Strings.toString(shops[reservations[_tokenId].shopAddress].courses[reservations[_tokenId].courseId].cancelFee),'"}',
+            ']}'
+        ))));
+        _setTokenURI(_tokenId, tokenURI);
+        console.log("tokenURI: ", tokenURI);
+    }
+
     function burnReservationNFT (uint256 _tokenId) public {
         _burn(_tokenId);
     }
