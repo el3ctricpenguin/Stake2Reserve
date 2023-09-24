@@ -15,17 +15,23 @@ contract S2RAave{
     ERC20 USDC = ERC20(USDC_ADDRESS);
     ERC20 aUSDC = ERC20(USDC_A_TOKEN);
 
+    uint256[] tokenIds;
+    mapping (uint => uint) stakeAmount; // Last Updated each aToken amount
+    uint256 aTokenTotalAmount; // Last Updated aToken total amount on contract
+
     event SupplyUSDCToAave(address sender, uint256 amount);
     event WithdrawUSDCFromAave(address sender, uint256 amount);
     constructor(){
     }
 
-    function supplyUSDCToAave(uint256 _amount) public {
+    function supplyUSDCToAave(uint256 _tokenId, uint256 _amount) public {
         require(USDC.balanceOf(msg.sender) >= _amount, "Insufficient USDC Balance");
         require(USDC.allowance(msg.sender, address(this)) >= _amount, "Insufficient USDC Allowance");
         USDC.transferFrom(msg.sender, address(this), _amount);
         USDC.approve(AAVE_POOL_ADDRESS, _amount);
         IPool(aavePool).supply(USDC_ADDRESS, _amount, address(this), 0);
+        
+        // addStake(_tokenId, _amount);
         emit SupplyUSDCToAave(msg.sender, _amount);
     }
     function withdrawUSDCFromAave(uint256 _amount) public {
