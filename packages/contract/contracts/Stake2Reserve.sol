@@ -4,11 +4,10 @@ pragma solidity ^0.8.19;
 import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
-import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-
 
 contract Stake2Reserve is ERC721URIStorage{
     using Counters for Counters.Counter;
@@ -16,7 +15,7 @@ contract Stake2Reserve is ERC721URIStorage{
 
     uint256 NY_SUMMER_TIME_2023_01_01 = 1672545600;
     uint256 penaltyStartTime = 60*60*12;
-    ERC20 USDC;
+    IERC20 USDC;
 
     /*--------------+
     |   Variables   |
@@ -61,7 +60,7 @@ contract Stake2Reserve is ERC721URIStorage{
 
     constructor(address _USDCAddress) ERC721("Stake2Reserve NFT", "S2R"){
         console.log(_USDCAddress);
-        USDC = ERC20(_USDCAddress);
+        USDC = IERC20(_USDCAddress);
     }
 
     function reserve (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
