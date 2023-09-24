@@ -11,3 +11,9 @@ export async function rootLoader() {
   }
   return { hasConnected, account };
 }
+
+export async function restaurantLoader({ params }) {
+  const address = params.id;
+  console.log("ID", params.id);
+  return { address };
+}

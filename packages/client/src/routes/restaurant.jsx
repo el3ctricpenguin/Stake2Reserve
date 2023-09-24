@@ -20,22 +20,102 @@ import {
   Tag,
   Text,
 } from "@chakra-ui/react";
-import { Form } from "react-router-dom";
+import { Form, useLoaderData } from "react-router-dom";
+
+import { BrowserProvider, Contract } from "ethers";
+
+import Stake2ReserveABI from "../utils/Stake2Reserve.json";
+import { Stake2ReserveAddress } from "../utils/utils";
+import { useContractRead } from "wagmi";
+import { useState, useEffect } from "react";
 
 export default function Restaurant() {
+  const [courses, setCourses] = useState([]);
+  const { address } = useLoaderData();
+  const { data, isLoading, isError } = useContractRead({
+    address: Stake2ReserveAddress,
+    abi: Stake2ReserveABI.abi,
+    functionName: "getShopStatus",
+    args: [address],
+  });
+
+  console.log("SSS", data);
+
+  const {
+    name,
+    imageURL,
+    genre,
+    description,
+    openingWeekDays,
+    openingTime,
+    closingTime,
+  } = data;
+
+  console.log(
+    name,
+    imageURL,
+    genre,
+    description,
+    openingWeekDays,
+    openingTime,
+    closingTime
+  );
+
+  useEffect(() => {
+    async function getShopsLoop() {
+      const results = [];
+      const MaybeCourseCount = 4;
+      try {
+        const { ethereum } = window;
+        if (ethereum) {
+          const provider = new BrowserProvider(window.ethereum);
+          const signer = await provider.getSigner();
+          const contract = new Contract(
+            Stake2ReserveAddress,
+            Stake2ReserveABI.abi,
+            signer
+          );
+          for (let id = 0; id < MaybeCourseCount; id++) {
+            const res = await contract.getCourses(address, id);
+            res
+              .catch((err) => {
+                console.error(err);
+              })
+              .then(() => {
+                results.push(res);
+              });
+          }
+          setCourses([...results]);
+        } else {
+          alert("Connected Wallet");
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+    getShopsLoop();
+  }, [address]);
+
+  console.log("CCCS", courses);
+
+  if (isLoading) return <Heading>Loading</Heading>;
+  if (isError) return <Heading>Error</Heading>;
+
   return (
     <>
       <Stack>
         <Container maxW="container.md">
-          <Image objectFit="cover" src="/nyc01.jpg" alt="Restaurant Name" />
+          <Image objectFit="cover" src={imageURL} alt={name} />
         </Container>
         <Container maxW="container.md">
-          <Heading>Restaurant Name</Heading>
-          <Tag maxW="fit-content">Restaurant Genre</Tag>
+          <Heading>{name}</Heading>
+          <Tag maxW="fit-content">{genre}</Tag>
           <Stack spacing="2" py="4">
-            <Text>Owner Address</Text>
-            <Text>Restaurant Address</Text>
-            <Text>Restaurant Description</Text>
+            <Text>
+              Address: <b>{address}</b>
+            </Text>
+            {/* <Text>{address}</Text> */}
+            <Text>{description}</Text>
           </Stack>
         </Container>
         <Divider />
