@@ -279,4 +279,21 @@ contract Stake2Reserve is ERC721URIStorage{
         }
         return noShowNFTIds;
     }
+    function getEligibleNFTs(address _shopAddress) view public returns(uint256[] memory){
+        uint256 tokenCount = _tokenIds.current();
+        uint256[] memory eligibleIdsTemp = new uint256[](tokenCount); // cannot use push and declare variable-length arrays in view
+        uint256 arrayCount = 0;
+        for(uint i=0;i<tokenCount;i++){ // i: tokenId
+            ReservationData memory reservation = reservations[i];
+            if(reservation.shopAddress == _shopAddress && !reservation.isCheckedOut && (reservation.endingTime+penaltyStartTime)> block.timestamp && _exists(i)){
+                eligibleIdsTemp[arrayCount]=i;
+                arrayCount++;
+            }
+        }
+        uint256[] memory eligibleIds = new uint256[](arrayCount);
+        for(uint i=0;i<arrayCount;i++){
+            eligibleIds[i]=eligibleIdsTemp[i];
+        }
+        return eligibleIds;
+    }
 }

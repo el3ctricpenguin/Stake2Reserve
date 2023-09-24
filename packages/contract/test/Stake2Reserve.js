@@ -210,7 +210,7 @@ describe("Stake2Reserve", ()=>{
                 const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
                 expect(await contract.getNoShowNFTs(owner.address)).to.eql([]);
             });
-            it("should return a NFT(tokenId: 0)", async()=>{
+            it("should return NFTs(tokenId: 0,3)", async()=>{
                 const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
                 await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 6, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 6, 11+4, 0, 0)).getTime()/1000, 2, 1);
                 await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 1, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 1, 11+4, 0, 0)).getTime()/1000, 2, 1);
@@ -219,6 +219,22 @@ describe("Stake2Reserve", ()=>{
                 const targetTimestamp = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000 + 60*60*12;
                 await time.increaseTo(targetTimestamp);
                 expect(await contract.getNoShowNFTs(owner.address)).to.eql([0n, 3n]);
+            });
+        });
+        describe("getEligibleNFTs", ()=>{
+            it("should return nothing", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                expect(await contract.getEligibleNFTs(owner.address)).to.eql([0n,1n]);
+            });
+            it("should return NFT(tokenId: 0)", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 6, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 6, 11+4, 0, 0)).getTime()/1000, 2, 1);
+                await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 1, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 1, 11+4, 0, 0)).getTime()/1000, 2, 1);
+
+
+                const targetTimestamp = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000 + 60*60*12;
+                await time.increaseTo(targetTimestamp);
+                expect(await contract.getEligibleNFTs(owner.address)).to.eql([1n, 2n]);
             });
         });
     });
