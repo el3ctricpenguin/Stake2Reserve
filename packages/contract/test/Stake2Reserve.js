@@ -4,11 +4,11 @@ const { expect } = require('chai');
 
 describe("Stake2Reserve", ()=>{
     const deployContract = async()=>{
-        const {usdc} = await loadFixture(deployUSDC);
+        const {usdc, S2RNFT} = await loadFixture(deployUSDCAndS2RNFT);
         // console.log(usdc);
         const [owner, otherAccount] = await ethers.getSigners();
         contractFactory = await ethers.getContractFactory("Stake2Reserve");
-        contract = await contractFactory.deploy(usdc.target);
+        contract = await contractFactory.deploy(usdc.target, S2RNFT.target);
         await contract.waitForDeployment();
         return {owner, otherAccount, contract, usdc};
     };
@@ -32,13 +32,17 @@ describe("Stake2Reserve", ()=>{
         await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 6, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 6, 11+4, 0, 0)).getTime()/1000, 2, 1);
         return {owner, otherAccount, contract, usdc};
     };
-    const deployUSDC = async()=>{
+    const deployUSDCAndS2RNFT = async()=>{
         const [owner, otherAccount] = await ethers.getSigners();
         const usdcFactory = await ethers.getContractFactory("MockUSDC");
         const usdc = await usdcFactory.deploy("MockUSDC", "USDC", 10**10, owner.address);
         await usdc.waitForDeployment();
         await usdc.transfer(otherAccount, 100*(10**6));
-        return {usdc};
+        
+        const S2RNFTFactory = await ethers.getContractFactory("S2RNFT");
+        const S2RNFT = await S2RNFTFactory.deploy();
+        await S2RNFT.waitForDeployment();
+        return {usdc, S2RNFT};
     }
 
     describe("NFT", ()=>{
@@ -53,10 +57,10 @@ describe("Stake2Reserve", ()=>{
         //     await contract.burnReservationNFT(0);
         //     expect(await contract.exists(0)).to.equal(false);
         // });
-        it("should convert ReservationNFT to VisitedNFT", async()=>{
-            const {owner, contract} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
-            await contract.convertReservationNFTtoVisitedNFT(0);
-        });
+        // it("should convert ReservationNFT to VisitedNFT", async()=>{
+        //     const {owner, contract} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+        //     await contract.convertReservationNFTtoVisitedNFT(0);
+        // });
     });
     describe("Week and Time", ()=>{
         describe("Week", ()=>{

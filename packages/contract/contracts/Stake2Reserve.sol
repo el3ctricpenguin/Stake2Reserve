@@ -3,20 +3,20 @@ pragma solidity ^0.8.19;
 
 import "hardhat/console.sol";
 
-import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "./S2RNFT.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
-import "@openzeppelin/contracts/utils/Base64.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 
 
-contract Stake2Reserve is ERC721URIStorage{
+contract Stake2Reserve {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
     uint256 NY_SUMMER_TIME_2023_01_01 = 1672545600;
     uint256 penaltyStartTime = 60*60*12;
     ERC20 USDC;
+    S2RNFT s2r;
+
 
     /*--------------+
     |   Variables   |
@@ -54,10 +54,15 @@ contract Stake2Reserve is ERC721URIStorage{
         bool isCheckedOut;
     }
 
+    event Reservation(address shopAddress, uint256 startingTime, uint256 endingTime, uint256 guestCount, uint256 courseId);
+    event RegisterShopProperty(string name, bool[7] openingWeekDays, uint256 openingTime, uint256 closingTime, Course[] courses, string imageURL, string genre, string description);
+    event SetPaymentAmount(uint256 tokenId, uint256 paymentAmount, address shopAddress);
+    event CheckOut(uint256 tokenId, uint256 customerPaymentAmount, address customerAddress);
 
-    constructor(address _USDCAddress) ERC721("Stake2Reserve NFT", "S2R"){
+    constructor(address _USDCAddress, address _S2RNFTAddress){
         console.log(_USDCAddress);
         USDC = ERC20(_USDCAddress);
+        s2r = S2RNFT(_S2RNFTAddress);
     }
 
     function reserve (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
@@ -83,16 +88,7 @@ contract Stake2Reserve is ERC721URIStorage{
 
         // depositStakeToAave()
 
-        mintReservationNFT(_shopAddress, _startingTime, _endingTime, _guestCount, _courseId);
-        // TODO: add an event
-    }
-
-    /*--------+
-    |   NFT   |
-    +--------*/
-    function mintReservationNFT (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
         uint256 newItemId = _tokenIds.current();
-
         // set parameters
         reservations[newItemId].shopAddress = _shopAddress;
         reservations[newItemId].shopName = shops[_shopAddress].name;
@@ -101,79 +97,13 @@ contract Stake2Reserve is ERC721URIStorage{
         reservations[newItemId].guestCount = _guestCount;
         reservations[newItemId].courseId = _courseId;
 
-        string memory tokenURI = makeTokenURI(_shopAddress, _startingTime, _endingTime, _guestCount, _courseId);
-        // console.log(tokenURI);
-        _mint(msg.sender, newItemId);
-        _setTokenURI(newItemId, tokenURI);
-
         _tokenIds.increment();
+        ShopStatus storage shop = shops[_shopAddress];
+        s2r.mintReservationNFT(_shopAddress, shop.name, _startingTime, _endingTime, _guestCount, _courseId, shop.courses[_courseId].cancelFee);
+        emit Reservation(_shopAddress, _startingTime, _endingTime, _guestCount, _courseId);
     }
 
-    function makeTokenURI (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) private view returns(string memory) {
-        Course memory _course = shops[_shopAddress].courses[_courseId];
-        return string(abi.encodePacked("data:application/json;base64,", Base64.encode(abi.encodePacked(
-            '{"name": "Stake2Reserve Reservation NFT",',
-            '"description": "Penguin",',
-            '"image": "https://i.imgur.com/T2F51Kn.jpeg",',
-            '"attributes": [',
-            '{"trait_type": "Shop Address",',
-            '"value": "',Strings.toHexString(_shopAddress),'"},',
-            '{"trait_type": "Shop Name",',
-            '"value": "',shops[_shopAddress].name,'"},',
-            '{"trait_type": "Reservation Date",',
-            '"display_type": "date",',
-            '"value": "',Strings.toString(_startingTime),'"},',
-            '{"trait_type": "Reservation Start Time",',
-            '"value": "',Strings.toString(_startingTime),'"},',
-            '{"trait_type": "Reservation End Time",',
-            '"value": "',Strings.toString(_endingTime),'"},',
-            '{"trait_type": "Guest Count",',
-            '"value": "',Strings.toString(_guestCount),'"},',
-            '{"trait_type": "Course Id",',
-            '"value": "',Strings.toString(_courseId),'"},',
-            '{"trait_type": "Cancel Fee",',
-            '"value": "',Strings.toString(_course.cancelFee),'"}',
-            ']}'
-        ))));
-    }
-
-    function convertReservationNFTtoVisitedNFT (uint256 _tokenId) public {
-        string memory tokenURI = string(abi.encodePacked("data:application/json;base64,", Base64.encode(abi.encodePacked(
-            '{"name": "Stake2Reserve Visited NFT",',
-            '"description": "Visited NFT description",',
-            '"image": "https://i.imgur.com/0mFSlbG.jpeg",',
-            '"attributes": [',
-            '{"trait_type": "Shop Address",',
-            '"value": "',Strings.toHexString(reservations[_tokenId].shopAddress),'"},',
-            '{"trait_type": "Shop Name",',
-            '"value": "',reservations[_tokenId].shopName,'"},',
-            '{"trait_type": "Reservation Date",',
-            '"display_type": "date",',
-            '"value": "',Strings.toString(reservations[_tokenId].startingTime),'"},',
-            '{"trait_type": "Reservation Start Time",',
-            '"value": "',Strings.toString(reservations[_tokenId].startingTime),'"},',
-            '{"trait_type": "Reservation End Time",',
-            '"value": "',Strings.toString(reservations[_tokenId].endingTime),'"},',
-            '{"trait_type": "Guest Count",',
-            '"value": "',Strings.toString(reservations[_tokenId].guestCount),'"},',
-            '{"trait_type": "Course Id",',
-            '"value": "',Strings.toString(reservations[_tokenId].courseId),'"},',
-            '{"trait_type": "Cancel Fee",',
-            '"value": "',Strings.toString(shops[reservations[_tokenId].shopAddress].courses[reservations[_tokenId].courseId].cancelFee),'"}',
-            ']}'
-        ))));
-        _setTokenURI(_tokenId, tokenURI);
-        console.log("tokenURI: ", tokenURI);
-    }
-
-    function burnReservationNFT (uint256 _tokenId) public {
-        _burn(_tokenId);
-    }
-
-    function exists (uint256 _tokenId) public view returns (bool){
-        return _exists(_tokenId);
-    }
-
+    
     /*------------------+
     |   Week and Time   |
     +------------------*/
@@ -203,9 +133,11 @@ contract Stake2Reserve is ERC721URIStorage{
     function setPaymentAmount(uint256 _tokenId, uint256 _paymentAmount) public {
         require(msg.sender == reservations[_tokenId].shopAddress, "msg.sender should be the shop owner");
         reservations[_tokenId].paymentAmount = _paymentAmount;
+        emit SetPaymentAmount(_tokenId, _paymentAmount, reservations[_tokenId].shopAddress);
     }
 
     function checkOut(uint256 _tokenId) public {
+        address customerAddress = s2r.ownerOf(_tokenId);
         uint256 customerPaymentAmount = reservations[_tokenId].paymentAmount;
         // check if Payment Amount is registered
         require(customerPaymentAmount>0, "paymentAmount is not set");
@@ -218,6 +150,7 @@ contract Stake2Reserve is ERC721URIStorage{
         
         // convertReservationNFTtoVisitedNFT()
         reservations[_tokenId].isCheckedOut = true;
+        emit CheckOut(_tokenId, customerPaymentAmount, customerAddress);
     }
 
     /*-------------------------+
@@ -231,7 +164,7 @@ contract Stake2Reserve is ERC721URIStorage{
         setShopCourses(msg.sender, _courses);
         // extra data
         setExtraData(msg.sender, _name, _imageURL, _genre, _description);
-        // TODO: add an event
+        emit RegisterShopProperty(_name, _openingWeekDays, _openingTime, _closingTime, _courses, _imageURL, _genre, _description);
     }
 
     function setShopName(address _shopAddress, string memory _name) private {
@@ -297,7 +230,7 @@ contract Stake2Reserve is ERC721URIStorage{
         uint256 arrayCount = 0;
         for(uint i=0;i<tokenCount;i++){ // i: tokenId
             ReservationData memory reservation = reservations[i];
-            if(reservation.shopAddress == _shopAddress && !reservation.isCheckedOut && (reservation.endingTime+penaltyStartTime)<= block.timestamp && _exists(i)){
+            if(reservation.shopAddress == _shopAddress && !reservation.isCheckedOut && (reservation.endingTime+penaltyStartTime)<= block.timestamp && s2r.exists(i)){
                 noShowNFTIdsTemp[arrayCount]=i;
                 arrayCount++;
             }
@@ -314,7 +247,7 @@ contract Stake2Reserve is ERC721URIStorage{
         uint256 arrayCount = 0;
         for(uint i=0;i<tokenCount;i++){ // i: tokenId
             ReservationData memory reservation = reservations[i];
-            if(reservation.shopAddress == _shopAddress && !reservation.isCheckedOut && (reservation.endingTime+penaltyStartTime)> block.timestamp && _exists(i)){
+            if(reservation.shopAddress == _shopAddress && !reservation.isCheckedOut && (reservation.endingTime+penaltyStartTime)> block.timestamp && s2r.exists(i)){
                 eligibleIdsTemp[arrayCount]=i;
                 arrayCount++;
             }
