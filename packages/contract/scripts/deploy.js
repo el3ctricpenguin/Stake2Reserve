@@ -18,8 +18,13 @@ async function main() {
   // await usdc.mintNewToken(100*(10**10));
   console.log("USDC deployed to: ", usdc.target);
 
+  const S2RNFTFactory = await ethers.getContractFactory("S2RNFT");
+  const S2RNFT = await S2RNFTFactory.deploy();
+  await S2RNFT.waitForDeployment();
+  console.log("S2RNFT deployed to: ", S2RNFT.target);
+
   const contractFactory = await hre.ethers.getContractFactory("Stake2Reserve");
-  const contract = await contractFactory.deploy(usdc.target);
+  const contract = await contractFactory.deploy(usdc.target, S2RNFT.target);
   await contract.waitForDeployment();
   console.log("Stake2Reserve deployed to: ", contract.target);
   
