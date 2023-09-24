@@ -54,6 +54,10 @@ contract Stake2Reserve is ERC721URIStorage{
         bool isCheckedOut;
     }
 
+    event Reservation(address shopAddress, uint256 startingTime, uint256 endingTime, uint256 guestCount, uint256 courseId);
+    event RegisterShopProperty(string name, bool[7] openingWeekDays, uint256 openingTime, uint256 closingTime, Course[] courses, string imageURL, string genre, string description);
+    event SetPaymentAmount(uint256 tokenId, uint256 paymentAmount, address shopAddress);
+    event CheckOut(uint256 tokenId, uint256 customerPaymentAmount, address customerAddress);
 
     constructor(address _USDCAddress) ERC721("Stake2Reserve NFT", "S2R"){
         console.log(_USDCAddress);
@@ -84,7 +88,7 @@ contract Stake2Reserve is ERC721URIStorage{
         // depositStakeToAave()
 
         mintReservationNFT(_shopAddress, _startingTime, _endingTime, _guestCount, _courseId);
-        // TODO: add an event
+        emit Reservation(_shopAddress, _startingTime, _endingTime, _guestCount, _courseId);
     }
 
     /*--------+
@@ -203,9 +207,11 @@ contract Stake2Reserve is ERC721URIStorage{
     function setPaymentAmount(uint256 _tokenId, uint256 _paymentAmount) public {
         require(msg.sender == reservations[_tokenId].shopAddress, "msg.sender should be the shop owner");
         reservations[_tokenId].paymentAmount = _paymentAmount;
+        emit SetPaymentAmount(_tokenId, _paymentAmount, reservations[_tokenId].shopAddress);
     }
 
     function checkOut(uint256 _tokenId) public {
+        address customerAddress = ownerOf(_tokenId);
         uint256 customerPaymentAmount = reservations[_tokenId].paymentAmount;
         // check if Payment Amount is registered
         require(customerPaymentAmount>0, "paymentAmount is not set");
@@ -218,6 +224,7 @@ contract Stake2Reserve is ERC721URIStorage{
         
         // convertReservationNFTtoVisitedNFT()
         reservations[_tokenId].isCheckedOut = true;
+        emit CheckOut(_tokenId, customerPaymentAmount, customerAddress);
     }
 
     /*-------------------------+
@@ -231,7 +238,7 @@ contract Stake2Reserve is ERC721URIStorage{
         setShopCourses(msg.sender, _courses);
         // extra data
         setExtraData(msg.sender, _name, _imageURL, _genre, _description);
-        // TODO: add an event
+        emit RegisterShopProperty(_name, _openingWeekDays, _openingTime, _closingTime, _courses, _imageURL, _genre, _description);
     }
 
     function setShopName(address _shopAddress, string memory _name) private {
