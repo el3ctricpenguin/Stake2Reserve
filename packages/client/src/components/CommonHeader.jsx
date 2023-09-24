@@ -1,10 +1,10 @@
 import {
   Button,
   Flex,
-  Heading,
   Menu,
   MenuButton,
   MenuItem,
+  Heading,
   MenuList,
   Spacer,
   useDisclosure,
@@ -44,10 +44,11 @@ export default function CommonHeader({ hasConnected, checkAccount }) {
   }
 
   return (
-    <Flex gap="2" py="10">
+    <Flex gap="2" py="8">
       <Link to="/">
         <Heading size="md">stake2reserve</Heading>
       </Link>
+      {/* <Image border="1px" maxH="50" src="/Stake2Reserve.png" /> */}
 
       <Spacer />
 

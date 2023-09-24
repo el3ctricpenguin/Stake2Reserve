@@ -5,12 +5,12 @@ export default function MyPage() {
   return (
     <>
       <Box
-        bg="yellow.100"
+        bg="yellow.50"
         borderRadius="md"
         textAlign="center"
         py="4"
         mb="6"
-        fontSize="2xl"
+        fontSize="xl"
       >
         <ChackraLink as={Link} to="/restaurant/registration">
           Register your restaurant
