@@ -34,10 +34,12 @@ contract S2RAave{
         addStake(_tokenId, _amount);
         emit SupplyUSDCToAave(msg.sender, _amount);
     }
-    function withdrawUSDCFromAave(uint256 _amount) public {
-        IPool(aavePool).withdraw(USDC_ADDRESS, _amount, address(this));
-        USDC.transfer(msg.sender, _amount);
-        emit WithdrawUSDCFromAave(msg.sender, _amount);
+    function withdrawUSDCFromAave(uint256 _tokenId) public {
+        uint256 stakedAmount = getCurrentStake(_tokenId);
+        removeStake(_tokenId, getStake(_tokenId));
+        IPool(aavePool).withdraw(USDC_ADDRESS, stakedAmount, address(this));
+        USDC.transfer(msg.sender, stakedAmount);
+        emit WithdrawUSDCFromAave(msg.sender, stakedAmount);
     }
 
     function addStake(uint256 _tokenId, uint256 _amount) private {
@@ -55,6 +57,12 @@ contract S2RAave{
             stakeAmount[_tokenId] = _amount; // add stake
             aTokenTotalAmount += _amount;
         }
+    }
+
+    function removeStake(uint256 _tokenId, uint256 _pastAmount) private{
+        stakeAmount[_tokenId] -= _pastAmount;
+        aTokenTotalAmount -= _pastAmount;
+        updateCurrentStake();
     }
 
     function updateCurrentStake() private {
