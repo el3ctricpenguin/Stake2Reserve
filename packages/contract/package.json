@@ -11,6 +11,7 @@
     "test": "npx hardhat test"
   },
   "dependencies": {
+    "@aave/core-v3": "^1.18.0",
     "@openzeppelin/contracts": "^4.9.3",
     "hardhat-contract-sizer": "^2.10.0"
   }

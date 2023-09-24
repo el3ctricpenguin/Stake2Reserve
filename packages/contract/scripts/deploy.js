@@ -23,8 +23,13 @@ async function main() {
   await S2RNFT.waitForDeployment();
   console.log("S2RNFT deployed to: ", S2RNFT.target);
 
+  const S2RAaveFactory = await ethers.getContractFactory("S2RNFT");
+  const S2RAave = await S2RAaveFactory.deploy();
+  await S2RAave.waitForDeployment();
+  console.log("S2RAave deployed to: ", S2RAave.target);
+
   const contractFactory = await hre.ethers.getContractFactory("Stake2Reserve");
-  const contract = await contractFactory.deploy(usdc.target, S2RNFT.target);
+  const contract = await contractFactory.deploy(usdc.target, S2RNFT.target, S2RAave.target);
   await contract.waitForDeployment();
   console.log("Stake2Reserve deployed to: ", contract.target);
   

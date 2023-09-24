@@ -5,6 +5,7 @@ import "hardhat/console.sol";
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./S2RNFT.sol";
+import "./S2RAave.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 
 
@@ -16,13 +17,16 @@ contract Stake2Reserve {
     uint256 penaltyStartTime = 60*60*12;
     ERC20 USDC;
     S2RNFT s2r;
+    S2RAave aave;
 
+    address S2RAaveAddress;
 
     /*--------------+
     |   Variables   |
     +--------------*/
 
     mapping (address=>ShopStatus) shops;
+    address[] shopAddresses;
     struct ShopStatus{
         // essential data
         bool[7] openingWeekDays; // 0~6: Sun~Sat
@@ -59,10 +63,12 @@ contract Stake2Reserve {
     event SetPaymentAmount(uint256 tokenId, uint256 paymentAmount, address shopAddress);
     event CheckOut(uint256 tokenId, uint256 customerPaymentAmount, address customerAddress);
 
-    constructor(address _USDCAddress, address _S2RNFTAddress){
+    constructor(address _USDCAddress, address _S2RNFTAddress, address _S2RAaveAddress){
         console.log(_USDCAddress);
         USDC = ERC20(_USDCAddress);
         s2r = S2RNFT(_S2RNFTAddress);
+        aave = S2RAave(_S2RAaveAddress);
+        S2RAaveAddress = _S2RAaveAddress;
     }
 
     function reserve (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
@@ -86,9 +92,11 @@ contract Stake2Reserve {
 
         // USDC.transferFrom(msg.sender, address(this), cancelFee); // don't know why but require doesn't work well
 
-        // depositStakeToAave()
-
         uint256 newItemId = _tokenIds.current();
+
+        USDC.approve(S2RAaveAddress, cancelFee);
+        aave.supplyUSDCToAave(newItemId, cancelFee);
+
         // set parameters
         reservations[newItemId].shopAddress = _shopAddress;
         reservations[newItemId].shopName = shops[_shopAddress].name;
@@ -164,6 +172,7 @@ contract Stake2Reserve {
         setShopCourses(msg.sender, _courses);
         // extra data
         setExtraData(msg.sender, _name, _imageURL, _genre, _description);
+        shopAddresses.push(msg.sender);
         emit RegisterShopProperty(_name, _openingWeekDays, _openingTime, _closingTime, _courses, _imageURL, _genre, _description);
     }
 
@@ -207,6 +216,10 @@ contract Stake2Reserve {
         string imageURL;
         string genre;
         string description;
+    }
+
+    function getShopAddresses() public view returns(address[]memory){
+        return shopAddresses;
     }
 
     function getShopStatus(address _shopAddress) public view returns(ShopStatusWithoutCources memory){
