@@ -15,6 +15,7 @@ contract Stake2Reserve is ERC721URIStorage{
     Counters.Counter private _tokenIds;
 
     uint256 NY_SUMMER_TIME_2023_01_01 = 1672545600;
+    uint256 penaltyStartTime = 60*60*12;
     ERC20 USDC;
 
     /*--------------+
@@ -77,6 +78,8 @@ contract Stake2Reserve is ERC721URIStorage{
         uint256 cancelFee = shops[_shopAddress].courses[_courseId].cancelFee;
         require(USDC.balanceOf(msg.sender) >= cancelFee, "Insufficient USDC Balance");
         require(USDC.allowance(msg.sender, address(this)) >= cancelFee, "Insufficient USDC Allowance");
+
+        // USDC.transferFrom(msg.sender, address(this), cancelFee); // don't know why but require doesn't work well
 
         // depositStakeToAave()
 
@@ -185,6 +188,7 @@ contract Stake2Reserve is ERC721URIStorage{
         // withdrawStakeFromAave()
         
         // convertReservationNFTtoVisitedNFT()
+        reservations[_tokenId].isCheckedOut = true;
     }
 
     /*-------------------------+
@@ -256,5 +260,40 @@ contract Stake2Reserve is ERC721URIStorage{
     }
     function getCourses(address _shopAddress, uint256 _courseId) public view returns(Course memory){
         return shops[_shopAddress].courses[_courseId];
+    }
+    
+    function getNoShowNFTs(address _shopAddress) view public returns(uint256[] memory){
+        uint256 tokenCount = _tokenIds.current();
+        uint256[] memory noShowNFTIdsTemp = new uint256[](tokenCount); // cannot use push and declare variable-length arrays in view
+        uint256 arrayCount = 0;
+        for(uint i=0;i<tokenCount;i++){ // i: tokenId
+            ReservationData memory reservation = reservations[i];
+            if(reservation.shopAddress == _shopAddress && !reservation.isCheckedOut && (reservation.endingTime+penaltyStartTime)<= block.timestamp && _exists(i)){
+                noShowNFTIdsTemp[arrayCount]=i;
+                arrayCount++;
+            }
+        }
+        uint256[] memory noShowNFTIds = new uint256[](arrayCount);
+        for(uint i=0;i<arrayCount;i++){
+            noShowNFTIds[i]=noShowNFTIdsTemp[i];
+        }
+        return noShowNFTIds;
+    }
+    function getEligibleNFTs(address _shopAddress) view public returns(uint256[] memory){
+        uint256 tokenCount = _tokenIds.current();
+        uint256[] memory eligibleIdsTemp = new uint256[](tokenCount); // cannot use push and declare variable-length arrays in view
+        uint256 arrayCount = 0;
+        for(uint i=0;i<tokenCount;i++){ // i: tokenId
+            ReservationData memory reservation = reservations[i];
+            if(reservation.shopAddress == _shopAddress && !reservation.isCheckedOut && (reservation.endingTime+penaltyStartTime)> block.timestamp && _exists(i)){
+                eligibleIdsTemp[arrayCount]=i;
+                arrayCount++;
+            }
+        }
+        uint256[] memory eligibleIds = new uint256[](arrayCount);
+        for(uint i=0;i<arrayCount;i++){
+            eligibleIds[i]=eligibleIdsTemp[i];
+        }
+        return eligibleIds;
     }
 }

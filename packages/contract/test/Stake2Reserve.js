@@ -135,7 +135,8 @@ describe("Stake2Reserve", ()=>{
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000;
                 await usdc.transfer(otherAccount.address, 9900000000);
-                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).to.be.revertedWith("Insufficient USDC Balance");
+                console.log(await usdc.balanceOf(owner.address));
+                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 0)).to.be.revertedWith("Insufficient USDC Balance");
             });
             it("should be reverted because of lack of USDC allowance", async()=>{
                 const {owner, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopProperty);
@@ -189,18 +190,52 @@ describe("Stake2Reserve", ()=>{
         });
     });
     describe("For Frontend", ()=>{
-        it("should return ReservationData", async()=>{
-            const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
-            console.log(await contract.getReservationData(0));
-            // expect(await contract.getReservationData(0)).to.equal(['0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266','Shop Name Here','1696350600','1696354200','2','0','0',false,]);
+        describe("get NFT/Shop data", ()=>{
+            it("should return ReservationData", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                console.log(await contract.getReservationData(0));
+                // expect(await contract.getReservationData(0)).to.equal(['0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266','Shop Name Here',1696350600n,1696354200n,2n,0n,0n,false]);
+            });
+            it("should return ShopStatusWithoutCources", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                console.log(await contract.getShopStatus(owner.address));
+            });
+            it("should return courses", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                console.log(await contract.getCourses(owner.address, 1));
+            });
         });
-        it("should return ShopStatusWithoutCources", async()=>{
-            const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
-            console.log(await contract.getShopStatus(owner.address));
+        describe("getNoShowNFTs", ()=>{
+            it("should return nothing", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                expect(await contract.getNoShowNFTs(owner.address)).to.eql([]);
+            });
+            it("should return NFTs(tokenId: 0,3)", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 6, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 6, 11+4, 0, 0)).getTime()/1000, 2, 1);
+                await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 1, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 1, 11+4, 0, 0)).getTime()/1000, 2, 1);
+
+
+                const targetTimestamp = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000 + 60*60*12;
+                await time.increaseTo(targetTimestamp);
+                expect(await contract.getNoShowNFTs(owner.address)).to.eql([0n, 3n]);
+            });
         });
-        it("should return courses", async()=>{
-            const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
-            console.log(await contract.getCourses(owner.address, 1));
+        describe("getEligibleNFTs", ()=>{
+            it("should return nothing", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                expect(await contract.getEligibleNFTs(owner.address)).to.eql([0n,1n]);
+            });
+            it("should return NFT(tokenId: 0)", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+                await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 6, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 6, 11+4, 0, 0)).getTime()/1000, 2, 1);
+                await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 1, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 1, 11+4, 0, 0)).getTime()/1000, 2, 1);
+
+
+                const targetTimestamp = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000 + 60*60*12;
+                await time.increaseTo(targetTimestamp);
+                expect(await contract.getEligibleNFTs(owner.address)).to.eql([1n, 2n]);
+            });
         });
     });
 });
