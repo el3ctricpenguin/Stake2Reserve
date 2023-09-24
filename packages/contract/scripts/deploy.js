@@ -1,48 +1,61 @@
-// We require the Hardhat Runtime Environment explicitly here. This is optional
-// but useful for running the script in a standalone fashion through `node <script>`.
-//
-// You can also run a script with `npx hardhat run <script>`. If you do that, Hardhat
-// will compile your contracts, add the Hardhat Runtime Environment's members to the
-// global scope, and execute the script.
 const hre = require("hardhat");
+const erc20_abi = require("../abi/ERC20.json");
+
+const USDC_DECIMALS = 100*(10**6);
 
 async function main() {
-  const [owner] = await hre.ethers.getSigners();
+  const [owner, otherAccount] = await hre.ethers.getSigners();
+  console.log("owner: ",owner.address);
+  console.log("otherAccount: ",otherAccount.address);
 
-  const usdcFactory = await hre.ethers.getContractFactory("MockUSDC");
-  const usdc = await usdcFactory.deploy("MockUSDC", "USDC", 10**10, owner.address);
-  await usdc.waitForDeployment();
-  // console.log(usdc);
-  // const usdcTransferTx = await usdc.transfer(otherAccount, 100*(10**6));
-  // await usdcTransferTx.wait();
-  // await usdc.mintNewToken(100*(10**10));
-  console.log("USDC deployed to: ", usdc.target);
+  /*--------------------------------+
+   *  CHANGE IT HERE WHEN DEPLOY!!  |
+   +-------------------------------*/
+  const USDC_ADDRESS = '0x94a9D9AC8a22534E3FaCa9F4e7F2E2cf85d5E4C8';
+  const USDC = new hre.ethers.Contract(USDC_ADDRESS, erc20_abi, owner);
 
   const S2RNFTFactory = await ethers.getContractFactory("S2RNFT");
   const S2RNFT = await S2RNFTFactory.deploy();
-  await S2RNFT.waitForDeployment();
+  // await S2RNFT.waitForDeployment();
   console.log("S2RNFT deployed to: ", S2RNFT.target);
 
-  const S2RAaveFactory = await ethers.getContractFactory("S2RNFT");
+  const S2RAaveFactory = await ethers.getContractFactory("S2RAave");
   const S2RAave = await S2RAaveFactory.deploy();
-  await S2RAave.waitForDeployment();
+  // await S2RAave.waitForDeployment();
   console.log("S2RAave deployed to: ", S2RAave.target);
 
   const contractFactory = await hre.ethers.getContractFactory("Stake2Reserve");
-  const contract = await contractFactory.deploy(usdc.target, S2RNFT.target, S2RAave.target);
+  const contract = await contractFactory.deploy(USDC_ADDRESS, S2RNFT.target, S2RAave.target);
   await contract.waitForDeployment();
   console.log("Stake2Reserve deployed to: ", contract.target);
   
   const registerShopDataTx = await registerShopData(contract);
   // console.log(registerShopDataTx);
   await registerShopDataTx.wait();
+  console.log('Registration Done');
 
+  // reservation
   const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
   const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000;
-  const usdcApproveTx = await usdc.approve(contract.target, 100*(10*6));
+  const usdcApproveTx = await USDC.connect(otherAccount).approve(contract.target, 2*100*USDC_DECIMALS+150*USDC_DECIMALS);
   await usdcApproveTx.wait();
-  const reserveTx = await contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1);
+  console.log('Approve (for Reservation) Done');
+  const reserveTx = await contract.connect(otherAccount).reserve(owner.address, reservationStartTime, reservationEndTime, 2, 0);
+  // const reserveTx2 = await contract.connect(otherAccount).reserve(owner.address, reservationStartTime+3000, reservationEndTime+3000, 2, 0);
   await reserveTx.wait();
+  console.log('Reservation Done');
+
+  // Check out
+  const setPaymentAmountTx = await contract.setPaymentAmount(0, 250)
+  await setPaymentAmountTx.wait();
+  console.log('setPaymentAmount Done');
+  const checkOutTx = await contract.connect(otherAccount).checkOut(0)
+  await checkOutTx.wait();
+  console.log('checkOut Done');
+
+  // withdrawCancelFee
+
+
 }
 
 const registerShopData = async (contract)=>{
