@@ -27,6 +27,7 @@ describe("Stake2Reserve", ()=>{
     };
     const deployedContractAndRegisteredShopPropertyAndReservedSome = async()=>{
         const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopProperty);
+        await usdc.connect(otherAccount).approve(contract.target, 300*(10**6));
         await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000, 2, 0);
         await contract.connect(otherAccount).reserve(owner.address, new Date(Date.UTC(2023, 10-1, 6, 10+4, 0, 0)).getTime()/1000, new Date(Date.UTC(2023, 10-1, 6, 11+4, 0, 0)).getTime()/1000, 2, 1);
         return {owner, otherAccount, contract, usdc};
@@ -111,10 +112,24 @@ describe("Stake2Reserve", ()=>{
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 1+4, 30, 0)).getTime()/1000;
                 await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).to.be.revertedWith("Shop is closed on the reservation time");
             });
-            it("should not be reverted", async()=>{
-                const {owner, contract} = await loadFixture(deployedContractAndRegisteredShopProperty);
+            it("should be reverted because of lack of USDC balance", async()=>{
+                const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopProperty);
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000;
+                await usdc.transfer(otherAccount.address, 9900000000);
+                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).to.be.revertedWith("Insufficient USDC Balance");
+            });
+            it("should be reverted because of lack of USDC allowance", async()=>{
+                const {owner, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopProperty);
+                const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
+                const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000;
+                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).to.be.revertedWith("Insufficient USDC Allowance");
+            });
+            it("should not be reverted", async()=>{
+                const {owner, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopProperty);
+                const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
+                const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000;
+                await usdc.approve(contract.target, 100*(10**6));
                 await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).not.to.be.reverted;
             });
         });
@@ -144,6 +159,7 @@ describe("Stake2Reserve", ()=>{
             it("should be reverted because of lack of USDC allowance", async()=>{
                 const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
                 await contract.setPaymentAmount(0, 200);
+                await usdc.connect(otherAccount).approve(contract.target, 0);
                 await expect(contract.connect(otherAccount).checkOut(0)).to.be.revertedWith("Insufficient USDC Allowance");
             });
             it("should not be reverted", async()=>{

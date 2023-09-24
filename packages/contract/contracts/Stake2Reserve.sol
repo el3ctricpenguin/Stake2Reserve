@@ -60,13 +60,18 @@ contract Stake2Reserve is ERC721URIStorage{
     }
 
     function reserve (address _shopAddress, uint256 _startingTime, uint256 _endingTime, uint256 _guestCount, uint256 _courseId) public {
-        
         // Date & Time validation
         // console.log("getWeekDay(_startingTime): ",getWeekDay(_startingTime));
         // console.log("shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)]: ",shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)]);
         require(shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)], "Shop is closed on the reservation date");
         require(isReservationWithinOpeningTime(_shopAddress, _startingTime, _endingTime), "Shop is closed on the reservation time");
         // TODO: Does the course exists?
+
+
+        // check if custormer can pay the cancel fee
+        uint256 cancelFee = shops[_shopAddress].courses[_courseId].cancelFee;
+        require(USDC.balanceOf(msg.sender) >= cancelFee, "Insufficient USDC Balance");
+        require(USDC.allowance(msg.sender, address(this)) >= cancelFee, "Insufficient USDC Allowance");
 
         // depositStakeToAave()
 
