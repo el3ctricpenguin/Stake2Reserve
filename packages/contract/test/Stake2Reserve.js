@@ -53,6 +53,10 @@ describe("Stake2Reserve", ()=>{
         //     await contract.burnReservationNFT(0);
         //     expect(await contract.exists(0)).to.equal(false);
         // });
+        it("should convert ReservationNFT to VisitedNFT", async()=>{
+            const {owner, contract} = await loadFixture(deployedContractAndRegisteredShopPropertyAndReservedSome);
+            await contract.convertReservationNFTtoVisitedNFT(0);
+        });
     });
     describe("Week and Time", ()=>{
         describe("Week", ()=>{
