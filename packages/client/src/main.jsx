@@ -8,7 +8,7 @@ import Root from "./routes/root";
 import Restaurant from "./routes/restaurant";
 import RestaurantRegistration from "./routes/restaurant-registration";
 
-import { rootLoader } from "./loader";
+import { registrationLoader, restaurantLoader, rootLoader } from "./loader";
 
 import { configureChains, createConfig, sepolia, WagmiConfig } from "wagmi";
 import { publicProvider } from "wagmi/providers/public";
@@ -39,10 +39,12 @@ const router = createBrowserRouter([
       {
         path: "/restaurant/:id",
         element: <Restaurant />,
+        loader: restaurantLoader,
       },
       {
         path: "/restaurant/registration",
         element: <RestaurantRegistration />,
+        loader: registrationLoader,
         action: registrationAction,
       },
       {

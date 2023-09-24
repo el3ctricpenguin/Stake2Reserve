@@ -1,4 +1,5 @@
 import {
+  AbsoluteCenter,
   Box,
   Button,
   ButtonGroup,
@@ -7,6 +8,7 @@ import {
   FormLabel,
   Heading,
   Input,
+  Image,
   Select,
   Stack,
   Textarea,
@@ -21,10 +23,17 @@ import {
   NumberDecrementStepper,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { Form, useNavigate } from "react-router-dom";
+import { Form, useNavigate, useLoaderData } from "react-router-dom";
+
+import { encodeImageFileAsURL } from "../utils/utils";
+
+import { useConnect } from "wagmi";
+import { InjectedConnector } from "wagmi/connectors/injected";
 
 export default function RestaurantRegistration() {
+  const { hasConnected } = useLoaderData();
   const navigate = useNavigate();
+  const { connect } = useConnect({ connector: new InjectedConnector() });
   const [checkedWeek, setCheckedWeek] = useState([
     true,
     true,
@@ -35,21 +44,24 @@ export default function RestaurantRegistration() {
     true,
   ]);
 
-  /**
-   *  owner address
-   *  name
-   *  dayofweek
-   *  time
-   * image
-   * Genre
-   * course
-   *    course name
-   *    cancel fee
-   *    course images
-   * description
-   * address
-   *
-   */
+  const [restaurantImgURL, setRestaurantImgURL] = useState("");
+
+  const [courseImgURL1, setCourseImgURL1] = useState("");
+  const [courseImgURL2, setCourseImgURL2] = useState("");
+  const [courseImgURL3, setCourseImgURL3] = useState("");
+  const [courseImgURL4, setCourseImgURL4] = useState("");
+
+  if (!hasConnected)
+    return (
+      <Box position="relative" h="200px" bg="gray.50">
+        <AbsoluteCenter p="4" axis="both">
+          <Heading mb="4">You must first connect to the wallet</Heading>
+          <Button onClick={() => connect()} color="white" bg="teal" size="lg">
+            Connect Wallet
+          </Button>
+        </AbsoluteCenter>
+      </Box>
+    );
 
   return (
     <>
@@ -62,6 +74,7 @@ export default function RestaurantRegistration() {
             <FormControl>
               <FormLabel>Restaurant Name</FormLabel>
               <Input
+                isRequired={true}
                 placeholder="Restaurant Name"
                 aria-label="Restaurant Name"
                 type="text"
@@ -72,13 +85,14 @@ export default function RestaurantRegistration() {
             <FormControl>
               <FormLabel>Restaurant Description</FormLabel>
               <Textarea
+                isRequired={true}
                 name="res-description"
                 rows={6}
                 placeholder="Here is resutaurant description"
               />
             </FormControl>
 
-            <FormControl>
+            {/* <FormControl>
               <FormLabel>Restaurant address</FormLabel>
               <Input
                 placeholder="Restaurant Address"
@@ -86,11 +100,12 @@ export default function RestaurantRegistration() {
                 type="text"
                 name="res-address"
               />
-            </FormControl>
+            </FormControl> */}
 
             <FormControl>
               <FormLabel>Restaurant Genre</FormLabel>
               <Select
+                isRequired={true}
                 name="res-genre"
                 placeholder="Select genre"
                 defaultValue="American"
@@ -128,11 +143,13 @@ export default function RestaurantRegistration() {
                   <Input
                     name="sun-start"
                     type="time"
+                    defaultValue="07:00"
                     isDisabled={!checkedWeek[0]}
                   />
                   <Input
                     name="sum-end"
                     type="time"
+                    defaultValue="20:00"
                     isDisabled={!checkedWeek[0]}
                   />
                 </HStack>
@@ -156,6 +173,7 @@ export default function RestaurantRegistration() {
                 <Spacer />
                 <HStack width="300px">
                   <Input
+                    defaultValue="07:00"
                     name="mon-start"
                     type="time"
                     isDisabled={!checkedWeek[1]}
@@ -163,6 +181,7 @@ export default function RestaurantRegistration() {
                   <Input
                     name="mon-end"
                     type="time"
+                    defaultValue="20:00"
                     isDisabled={!checkedWeek[1]}
                   />
                 </HStack>
@@ -186,6 +205,7 @@ export default function RestaurantRegistration() {
                 <Spacer />
                 <HStack width="300px">
                   <Input
+                    defaultValue="07:00"
                     name="tue-start"
                     type="time"
                     isDisabled={!checkedWeek[2]}
@@ -193,6 +213,7 @@ export default function RestaurantRegistration() {
                   <Input
                     name="tue-end"
                     type="time"
+                    defaultValue="20:00"
                     isDisabled={!checkedWeek[2]}
                   />
                 </HStack>
@@ -216,6 +237,7 @@ export default function RestaurantRegistration() {
                 <Spacer />
                 <HStack width="300px">
                   <Input
+                    defaultValue="07:00"
                     name="wed-start"
                     type="time"
                     isDisabled={!checkedWeek[3]}
@@ -223,6 +245,7 @@ export default function RestaurantRegistration() {
                   <Input
                     name="wed-end"
                     type="time"
+                    defaultValue="20:00"
                     isDisabled={!checkedWeek[3]}
                   />
                 </HStack>
@@ -247,12 +270,14 @@ export default function RestaurantRegistration() {
                 <HStack width="300px">
                   <Input
                     name="thu-start"
+                    defaultValue="07:00"
                     type="time"
                     isDisabled={!checkedWeek[4]}
                   />
                   <Input
                     name="thu-end"
                     type="time"
+                    defaultValue="20:00"
                     isDisabled={!checkedWeek[4]}
                   />
                 </HStack>
@@ -278,11 +303,13 @@ export default function RestaurantRegistration() {
                   <Input
                     name="fri-start"
                     type="time"
+                    defaultValue="07:00"
                     isDisabled={!checkedWeek[5]}
                   />
                   <Input
                     name="fri-end"
                     type="time"
+                    defaultValue="20:00"
                     isDisabled={!checkedWeek[5]}
                   />
                 </HStack>
@@ -308,26 +335,40 @@ export default function RestaurantRegistration() {
                   <Input
                     name="sat-start"
                     type="time"
+                    defaultValue="07:00"
                     isDisabled={!checkedWeek[6]}
                   />
                   <Input
                     name="sat-end"
                     type="time"
+                    defaultValue="20:00"
                     isDisabled={!checkedWeek[6]}
                   />
                 </HStack>
               </Flex>
+              <Input type="hidden" name="res-weekdays" value={checkedWeek} />
+              <Input type="hidden" name="res-openingTime" value={25200} />
+              <Input type="hidden" name="res-closingTime" value={72000} />
             </FormControl>
 
             <FormControl>
-              <FormLabel>Restaurant Image (URL) </FormLabel>
+              <FormLabel>Restaurant Image</FormLabel>
               <Input
+                isRequired={true}
                 type="file"
                 accept="image/jpeg, image/png"
                 aria-label="Restaurant Image"
-                name="res-image"
+                onChange={(e) =>
+                  encodeImageFileAsURL(e.target, setRestaurantImgURL)
+                }
               />
+              <Input type="hidden" name="res-image" value={restaurantImgURL} />
             </FormControl>
+
+            <Box maxW="md">
+              Preview
+              <Image src={restaurantImgURL} />
+            </Box>
 
             <FormControl>
               <FormLabel>Course</FormLabel>
@@ -344,7 +385,7 @@ export default function RestaurantRegistration() {
                 <FormLabel>
                   cancel fee ($)
                   <NumberInput>
-                    <NumberInputField name="res-cancel1" />
+                    <NumberInputField name="res-cancel0" />
                     <NumberInputStepper>
                       <NumberIncrementStepper />
                       <NumberDecrementStepper />
@@ -352,6 +393,21 @@ export default function RestaurantRegistration() {
                   </NumberInput>
                 </FormLabel>
               </Flex>
+              <FormControl>
+                <FormLabel>Course Image</FormLabel>
+                <Input
+                  type="file"
+                  accept="image/jpeg, image/png"
+                  aria-label="Restaurant Image"
+                  onChange={(e) =>
+                    encodeImageFileAsURL(e.target, setCourseImgURL1)
+                  }
+                />
+              </FormControl>
+              <Box maxW="sm">
+                <Image src={courseImgURL1} />
+              </Box>
+
               <Flex>
                 <FormLabel>
                   name
@@ -361,6 +417,43 @@ export default function RestaurantRegistration() {
                     aria-label="Restaurant Course Name"
                     name="res-course1"
                   />
+                  <Image />
+                </FormLabel>
+                <FormLabel>
+                  cancel fee ($)
+                  <NumberInput>
+                    <NumberInputField name="res-cancel1" />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormLabel>
+              </Flex>
+              <FormControl>
+                <FormLabel>Course Image</FormLabel>
+                <Input
+                  type="file"
+                  accept="image/jpeg, image/png"
+                  aria-label="Restaurant Image"
+                  onChange={(e) =>
+                    encodeImageFileAsURL(e.target, setCourseImgURL2)
+                  }
+                />
+              </FormControl>
+              <Box maxW="sm">
+                <Image src={courseImgURL2} />
+              </Box>
+              <Flex>
+                <FormLabel>
+                  name
+                  <Input
+                    type="text"
+                    placeholder="Restaurant Course Name"
+                    aria-label="Restaurant Course Name"
+                    name="res-course2"
+                  />
+                  <Image />
                 </FormLabel>
                 <FormLabel>
                   cancel fee ($)
@@ -373,6 +466,77 @@ export default function RestaurantRegistration() {
                   </NumberInput>
                 </FormLabel>
               </Flex>
+              <FormControl>
+                <FormLabel>Course Image</FormLabel>
+                <Input
+                  type="file"
+                  accept="image/jpeg, image/png"
+                  aria-label="Restaurant Image"
+                  onChange={(e) =>
+                    encodeImageFileAsURL(e.target, setCourseImgURL3)
+                  }
+                />
+              </FormControl>
+              <Box maxW="sm">
+                <Image src={courseImgURL3} />
+              </Box>
+              <Flex>
+                <FormLabel>
+                  name
+                  <Input
+                    type="text"
+                    placeholder="Restaurant Course Name"
+                    aria-label="Restaurant Course Name"
+                    name="res-course3"
+                  />
+                  <Image />
+                </FormLabel>
+                <FormLabel>
+                  cancel fee ($)
+                  <NumberInput>
+                    <NumberInputField name="res-cancel3" />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormLabel>
+              </Flex>
+              <FormControl>
+                <FormLabel>Course Image</FormLabel>
+                <Input
+                  type="file"
+                  accept="image/jpeg, image/png"
+                  aria-label="Restaurant Image"
+                  onChange={(e) =>
+                    encodeImageFileAsURL(e.target, setCourseImgURL4)
+                  }
+                />
+              </FormControl>
+              <Box maxW="sm">
+                <Image src={courseImgURL4} />
+              </Box>
+
+              <Input
+                type="hidden"
+                name="res-course1-img"
+                value={[courseImgURL1]}
+              />
+              <Input
+                type="hidden"
+                name="res-course2-img"
+                value={[courseImgURL2]}
+              />
+              <Input
+                type="hidden"
+                name="res-course3-img"
+                value={[courseImgURL3]}
+              />
+              <Input
+                type="hidden"
+                name="res-course4-img"
+                value={[courseImgURL4]}
+              />
             </FormControl>
 
             <ButtonGroup gap="2">

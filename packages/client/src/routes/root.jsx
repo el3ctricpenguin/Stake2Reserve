@@ -9,8 +9,10 @@ export default function Root() {
 
   return (
     <>
-      <CommonHeader hasConnected={hasConnected} checkAccount={account} />
       <Container maxW="container.xl">
+        <CommonHeader hasConnected={hasConnected} checkAccount={account} />
+      </Container>
+      <Container maxW="container.xl" py="10">
         <Outlet />
       </Container>
     </>

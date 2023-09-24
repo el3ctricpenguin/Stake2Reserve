@@ -1,3 +1,4 @@
+/* eslint-disable react/prop-types */
 import {
   Card,
   CardBody,
@@ -12,21 +13,24 @@ import {
 } from "@chakra-ui/react";
 import { Link } from "react-router-dom";
 
-export default function RestaurantCard() {
+export default function RestaurantCard({ restaurantData, address }) {
+  const { name, imageURL, genre, description } = restaurantData;
+  console.log(name, imageURL, genre, description);
+
   return (
     <LinkBox width="100%">
       <Card maxWidth="sm">
         <CardBody>
-          <Image src="/nyc01.jpg" alt="Restaurant Name" borderRadius="lg" />
+          <Image src={imageURL} alt={name} borderRadius="lg" />
           <Stack mt="6" spacing="2">
-            <LinkOverlay as={Link} to="/restaurant/1">
-              <Heading size="lg">Restaurant Name Great rolePaaris</Heading>
+            <LinkOverlay as={Link} to={`/restaurant/${address}`}>
+              <Heading size="lg">{name}</Heading>
             </LinkOverlay>
-            <Text>Restaurant Description</Text>
+            <Text>{description}</Text>
           </Stack>
         </CardBody>
         <CardFooter padding="3">
-          <Tag maxW="fit-content">Restaurant Genre</Tag>
+          <Tag maxW="fit-content">{genre}</Tag>
         </CardFooter>
       </Card>
     </LinkBox>
