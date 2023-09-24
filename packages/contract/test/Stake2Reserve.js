@@ -112,6 +112,24 @@ describe("Stake2Reserve", ()=>{
                 const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 1+4, 30, 0)).getTime()/1000;
                 await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).to.be.revertedWith("Shop is closed on the reservation time");
             });
+            it("should be reverted because courseId doesn't exist", async()=>{
+                const {owner, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopProperty);
+                const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
+                const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 13+4, 30, 0)).getTime()/1000;
+                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 3)).to.be.revertedWith("courseId is not exists");
+            });
+            it("should be reverted because startingTime > endingTime", async()=>{
+                const {owner, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopProperty);
+                const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;
+                const reservationEndTime = new Date(Date.UTC(2023, 10-1, 3, 11+4, 30, 0)).getTime()/1000;
+                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 1)).to.be.revertedWith("startingTime > endingTime");
+            });
+            it("should be reverted because reserving past", async()=>{ // could be commented (for Demo)
+                const {owner, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopProperty);
+                const reservationStartTime = new Date(Date.UTC(2023, 8-1, 3, 12+4, 30, 0)).getTime()/1000;
+                const reservationEndTime = new Date(Date.UTC(2023, 8-1, 3, 13+4, 30, 0)).getTime()/1000;
+                await expect(contract.reserve(owner.address, reservationStartTime, reservationEndTime, 2, 0)).to.be.revertedWith("startingTime is past");
+            });
             it("should be reverted because of lack of USDC balance", async()=>{
                 const {owner, otherAccount, contract, usdc} = await loadFixture(deployedContractAndRegisteredShopProperty);
                 const reservationStartTime = new Date(Date.UTC(2023, 10-1, 3, 12+4, 30, 0)).getTime()/1000;

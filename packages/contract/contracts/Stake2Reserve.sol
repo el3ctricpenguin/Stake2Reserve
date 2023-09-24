@@ -65,8 +65,13 @@ contract Stake2Reserve is ERC721URIStorage{
         // console.log("shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)]: ",shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)]);
         require(shops[_shopAddress].openingWeekDays[getWeekDay(_startingTime)], "Shop is closed on the reservation date");
         require(isReservationWithinOpeningTime(_shopAddress, _startingTime, _endingTime), "Shop is closed on the reservation time");
-        // TODO: Does the course exists?
+        
+        // check if courseId exists
+        require(shops[_shopAddress].courses[_courseId].cancelFee!=0, "courseId is not exists");
 
+        // check if not past and endTime>startTime
+        require(_startingTime<_endingTime, "startingTime > endingTime");
+        require(block.timestamp<_startingTime, "startingTime is past");
 
         // check if custormer can pay the cancel fee
         uint256 cancelFee = shops[_shopAddress].courses[_courseId].cancelFee;
