@@ -1,8 +1,14 @@
+/**
+ * 画像を直接BASE64に変換する
+ * 通常のWEBではいいが、WEB3ではトランザクションのサイズがバカでかいので、
+ * これを直接スマコンの引数に渡すと、トランザクションがタイムアウトして
+ * 失敗する
+ */
 export function encodeImageFileAsURL(element, callback) {
   let file = element.files[0];
   let reader = new FileReader();
   reader.onloadend = function () {
-    console.log("RESULT: ", reader.result);
+    // console.log("RESULT: ", reader.result);
     // setRestaurantImgURL(reader.result);
     callback(reader.result);
   };

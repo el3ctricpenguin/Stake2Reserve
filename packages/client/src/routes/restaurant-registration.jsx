@@ -379,13 +379,13 @@ export default function RestaurantRegistration() {
                     type="text"
                     placeholder="Restaurant Course Name"
                     aria-label="Restaurant Course Name"
-                    name="res-course0"
+                    name="res-course1"
                   />
                 </FormLabel>
                 <FormLabel>
                   cancel fee ($)
                   <NumberInput>
-                    <NumberInputField name="res-cancel0" />
+                    <NumberInputField name="res-cancel1" />
                     <NumberInputStepper>
                       <NumberIncrementStepper />
                       <NumberDecrementStepper />
@@ -415,42 +415,6 @@ export default function RestaurantRegistration() {
                     type="text"
                     placeholder="Restaurant Course Name"
                     aria-label="Restaurant Course Name"
-                    name="res-course1"
-                  />
-                  <Image />
-                </FormLabel>
-                <FormLabel>
-                  cancel fee ($)
-                  <NumberInput>
-                    <NumberInputField name="res-cancel1" />
-                    <NumberInputStepper>
-                      <NumberIncrementStepper />
-                      <NumberDecrementStepper />
-                    </NumberInputStepper>
-                  </NumberInput>
-                </FormLabel>
-              </Flex>
-              <FormControl>
-                <FormLabel>Course Image</FormLabel>
-                <Input
-                  type="file"
-                  accept="image/jpeg, image/png"
-                  aria-label="Restaurant Image"
-                  onChange={(e) =>
-                    encodeImageFileAsURL(e.target, setCourseImgURL2)
-                  }
-                />
-              </FormControl>
-              <Box maxW="sm">
-                <Image src={courseImgURL2} />
-              </Box>
-              <Flex>
-                <FormLabel>
-                  name
-                  <Input
-                    type="text"
-                    placeholder="Restaurant Course Name"
-                    aria-label="Restaurant Course Name"
                     name="res-course2"
                   />
                   <Image />
@@ -473,13 +437,14 @@ export default function RestaurantRegistration() {
                   accept="image/jpeg, image/png"
                   aria-label="Restaurant Image"
                   onChange={(e) =>
-                    encodeImageFileAsURL(e.target, setCourseImgURL3)
+                    encodeImageFileAsURL(e.target, setCourseImgURL2)
                   }
                 />
               </FormControl>
               <Box maxW="sm">
-                <Image src={courseImgURL3} />
+                <Image src={courseImgURL2} />
               </Box>
+
               <Flex>
                 <FormLabel>
                   name
@@ -495,6 +460,43 @@ export default function RestaurantRegistration() {
                   cancel fee ($)
                   <NumberInput>
                     <NumberInputField name="res-cancel3" />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </FormLabel>
+              </Flex>
+              <FormControl>
+                <FormLabel>Course Image</FormLabel>
+                <Input
+                  type="file"
+                  accept="image/jpeg, image/png"
+                  aria-label="Restaurant Image"
+                  onChange={(e) =>
+                    encodeImageFileAsURL(e.target, setCourseImgURL3)
+                  }
+                />
+              </FormControl>
+              <Box maxW="sm">
+                <Image src={courseImgURL3} />
+              </Box>
+
+              <Flex>
+                <FormLabel>
+                  name
+                  <Input
+                    type="text"
+                    placeholder="Restaurant Course Name"
+                    aria-label="Restaurant Course Name"
+                    name="res-course4"
+                  />
+                  <Image />
+                </FormLabel>
+                <FormLabel>
+                  cancel fee ($)
+                  <NumberInput>
+                    <NumberInputField name="res-cancel4" />
                     <NumberInputStepper>
                       <NumberIncrementStepper />
                       <NumberDecrementStepper />

@@ -10,7 +10,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import ConnectModal from "./ConnectModal";
-import { useAccount, useDisconnect, useEnsName, useNetwork } from "wagmi";
+import { useAccount, useDisconnect, useEnsName } from "wagmi";
 import { Link, useNavigate } from "react-router-dom";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 
@@ -19,8 +19,6 @@ export default function CommonHeader({ hasConnected, checkAccount }) {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const { address, isConnected } = useAccount();
   const { data: ensName } = useEnsName({ address });
-  const { chain, chains } = useNetwork();
-  console.log(chain, chains);
   const { disconnect } = useDisconnect();
   const navigate = useNavigate();
 
