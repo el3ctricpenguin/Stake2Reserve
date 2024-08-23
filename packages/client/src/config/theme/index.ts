@@ -6,7 +6,16 @@ const createTheme = () =>
             initialColorMode: "light",
             useSystemColorMode: false,
         },
-        colors: {},
+        colors: {
+            brand: {
+                red: "#C81111",
+                redHover: "#A10000",
+            },
+        },
+        fonts: {
+            heading: "Rokkitt, sans-serif;",
+            body: "Rokkitt, sans-serif;",
+        },
         fontSizes: {
             "2xs": "0.5rem", // 8px
             xs: "0.625rem", // 10px
@@ -21,8 +30,8 @@ const createTheme = () =>
         styles: {
             global: {
                 body: {
-                    color: "brand.gray.600",
-                    background: "red.500",
+                    color: "gray.900",
+                    background: "brand.red",
                 },
                 a: {
                     cursor: "pointer",
