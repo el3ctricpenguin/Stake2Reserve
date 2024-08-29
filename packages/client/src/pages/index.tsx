@@ -1,7 +1,27 @@
+import { S2RABI } from "@/config/abi/Stake2Reserve";
+import { contractAddresses } from "@/config/constants";
 import { Box, Card, CardBody, HStack, Text, Image, Button, VStack } from "@chakra-ui/react";
 import Head from "next/head";
+import { useAccount, useConnect, useDisconnect, useReadContract } from "wagmi";
 
 export default function Home() {
+    const { connectors, connect } = useConnect();
+    const { disconnect } = useDisconnect();
+    const { isConnected, address } = useAccount();
+
+    const { data: shopAddresses } = useReadContract({
+        address: contractAddresses.S2R,
+        abi: S2RABI,
+        functionName: "getShopAddresses",
+        args: [],
+    });
+    console.log("shopAddresses: ", shopAddresses);
+    const { data: shopStatus } = useReadContract({
+        address: contractAddresses.S2R,
+        functionName: "getShopStatus",
+    });
+    console.log("shopStatus: ", shopStatus);
+
     return (
         <>
             <Head>
@@ -14,7 +34,11 @@ export default function Home() {
                         <Image src="/img/Stake2Reserve.svg" alt="Stake2Reserve logo" h={50} />
                         <Box bgColor="white" border="4px solid black" borderRadius={15} px={5} py={1}>
                             <Text fontSize={22} fontWeight="bold" p={0} m={0}>
-                                0x00000...00000
+                                {isConnected
+                                    ? address
+                                        ? address.slice(0, 6) + "..." + address.slice(-6)
+                                        : "Unknown Address"
+                                    : "0x0000...000000"}
                             </Text>
                         </Box>
                     </HStack>
@@ -44,8 +68,9 @@ export default function Home() {
                                     _active={{
                                         bgColor: "brand.redHover",
                                     }}
+                                    onClick={!isConnected ? () => connect({ connector: connectors[0] }) : () => disconnect()}
                                 >
-                                    Connect Wallet
+                                    {!isConnected ? "Connect Wallet" : "Disconnect"}
                                 </Button>
                             </HStack>
                         </VStack>
