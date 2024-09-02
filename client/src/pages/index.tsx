@@ -1,7 +1,8 @@
-import { S2RABI } from "@/config/abi/Stake2Reserve";
 import { contractAddresses } from "@/config/constants";
+import { stake2ReserveAbi } from "@/generated";
 import { Box, Card, CardBody, HStack, Text, Image, Button, VStack } from "@chakra-ui/react";
 import Head from "next/head";
+import { zeroAddress } from "viem";
 import { useAccount, useConnect, useDisconnect, useReadContract } from "wagmi";
 
 export default function Home() {
@@ -11,16 +12,18 @@ export default function Home() {
 
     const { data: shopAddresses } = useReadContract({
         address: contractAddresses.S2R,
-        abi: S2RABI,
+        abi: stake2ReserveAbi,
         functionName: "getShopAddresses",
         args: [],
     });
     console.log("shopAddresses: ", shopAddresses);
-    const { data: shopStatus } = useReadContract({
+    const { data: shopStatus, error } = useReadContract({
         address: contractAddresses.S2R,
+        abi: stake2ReserveAbi,
         functionName: "getShopStatus",
+        args: [shopAddresses ? shopAddresses[0] : zeroAddress],
     });
-    console.log("shopStatus: ", shopStatus);
+    console.log("shopStatus: ", shopStatus, error);
 
     return (
         <>
@@ -49,8 +52,13 @@ export default function Home() {
                                 Restaurants
                             </Text>
                             <HStack justify="space-around">
-                                <Card>
-                                    <CardBody>aaa</CardBody>
+                                <Card w={200} borderRadius={10} bgColor="white" border="3px solid black">
+                                    <Image src={shopStatus?.imageURL} w="full" borderTopRadius={7} />
+                                    <CardBody>
+                                        <Text color="gray.900" fontSize={21} fontWeight="bold">
+                                            {shopStatus?.name}
+                                        </Text>
+                                    </CardBody>
                                 </Card>
                             </HStack>
                             <HStack justify="center" my={4}>
