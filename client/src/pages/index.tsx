@@ -1,8 +1,8 @@
+import RestaurantCard from "@/components/RestaurantCard";
 import { contractAddresses } from "@/config/constants";
 import { stake2ReserveAbi } from "@/generated";
 import { Box, Card, CardBody, HStack, Text, Image, Button, VStack } from "@chakra-ui/react";
 import Head from "next/head";
-import { zeroAddress } from "viem";
 import { useAccount, useConnect, useDisconnect, useReadContract } from "wagmi";
 
 export default function Home() {
@@ -17,13 +17,6 @@ export default function Home() {
         args: [],
     });
     console.log("shopAddresses: ", shopAddresses);
-    const { data: shopStatus, error } = useReadContract({
-        address: contractAddresses.S2R,
-        abi: stake2ReserveAbi,
-        functionName: "getShopStatus",
-        args: [shopAddresses ? shopAddresses[0] : zeroAddress],
-    });
-    console.log("shopStatus: ", shopStatus, error);
 
     return (
         <>
@@ -52,17 +45,9 @@ export default function Home() {
                                 Restaurants
                             </Text>
                             <HStack justify="space-around">
-                                <Card w={200} borderRadius={10} bgColor="white" border="3px solid black">
-                                    <Image src={shopStatus?.imageURL} w="full" borderTopRadius={7} />
-                                    <CardBody p={3}>
-                                        <VStack spacing={1}>
-                                            <Text color="gray.900" fontSize={20} fontWeight="bold">
-                                                {shopStatus?.name}
-                                            </Text>
-                                            <Button variant="red">Reserve!</Button>
-                                        </VStack>
-                                    </CardBody>
-                                </Card>
+                                {shopAddresses?.map((address) => (
+                                    <RestaurantCard restaurantAddress={address} />
+                                ))}
                             </HStack>
                             <HStack justify="center" my={4}>
                                 <Button
