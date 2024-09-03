@@ -54,28 +54,19 @@ export default function Home() {
                             <HStack justify="space-around">
                                 <Card w={200} borderRadius={10} bgColor="white" border="3px solid black">
                                     <Image src={shopStatus?.imageURL} w="full" borderTopRadius={7} />
-                                    <CardBody>
-                                        <Text color="gray.900" fontSize={21} fontWeight="bold">
-                                            {shopStatus?.name}
-                                        </Text>
+                                    <CardBody p={3}>
+                                        <VStack spacing={1}>
+                                            <Text color="gray.900" fontSize={20} fontWeight="bold">
+                                                {shopStatus?.name}
+                                            </Text>
+                                            <Button variant="red">Reserve!</Button>
+                                        </VStack>
                                     </CardBody>
                                 </Card>
                             </HStack>
                             <HStack justify="center" my={4}>
                                 <Button
-                                    bgColor="brand.red"
-                                    color="white"
-                                    fontSize={20}
-                                    px={4}
-                                    py={2}
-                                    border="3px solid black"
-                                    borderRadius={20}
-                                    _hover={{
-                                        bgColor: "brand.redHover",
-                                    }}
-                                    _active={{
-                                        bgColor: "brand.redHover",
-                                    }}
+                                    variant="red"
                                     onClick={!isConnected ? () => connect({ connector: connectors[0] }) : () => disconnect()}
                                 >
                                     {!isConnected ? "Connect Wallet" : "Disconnect"}

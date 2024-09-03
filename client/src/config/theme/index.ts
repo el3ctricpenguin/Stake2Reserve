@@ -1,4 +1,4 @@
-import { extendTheme } from "@chakra-ui/react";
+import { defineStyleConfig, extendTheme } from "@chakra-ui/react";
 
 const createTheme = () =>
     extendTheme({
@@ -38,7 +38,34 @@ const createTheme = () =>
                 },
             },
         },
-        components: {},
+        components: {
+            Button: defineStyleConfig({
+                baseStyle: {
+                    border: "3px solid black",
+                    borderRadius: 20,
+                },
+                variants: {
+                    solid: {
+                        fontSize: 20,
+                        px: 4,
+                        py: 2,
+                    },
+                    red: {
+                        bgColor: "brand.red",
+                        color: "white",
+                        fontSize: 20,
+                        px: 4,
+                        py: 2,
+                        _hover: {
+                            bgColor: "brand.redHover",
+                        },
+                        _active: {
+                            bgColor: "brand.redHover",
+                        },
+                    },
+                },
+            }),
+        },
     });
 
 export default createTheme();
