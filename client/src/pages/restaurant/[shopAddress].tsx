@@ -1,6 +1,29 @@
 import { contractAddresses } from "@/config/constants";
 import { stake2ReserveAbi } from "@/generated";
-import { Box, HStack, Text, Image, Button, VStack, Skeleton, Table, TableContainer, Tbody, Td, Tr, TableCaption } from "@chakra-ui/react";
+import {
+    Box,
+    HStack,
+    Text,
+    Image,
+    Button,
+    VStack,
+    Skeleton,
+    Table,
+    TableContainer,
+    Tbody,
+    Td,
+    Tr,
+    TableCaption,
+    SkeletonText,
+    FormControl,
+    Input,
+    FormLabel,
+    NumberDecrementStepper,
+    NumberIncrementStepper,
+    NumberInput,
+    NumberInputField,
+    NumberInputStepper,
+} from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { getAddress, zeroAddress } from "viem";
@@ -51,11 +74,13 @@ export default function ShopDetail() {
                         {isLoading ? "Restaurant" : shopStatus?.name}
                     </Text>
                     <Box w="33%" borderRadius={10} border="3px solid black">
-                        <Skeleton isLoaded={!isLoading}>
+                        <Skeleton isLoaded={!isLoading} aspectRatio={1 / 1}>
                             <Image alt={shopStatus?.name + " image"} src={shopStatus?.imageURL} />
                         </Skeleton>
                     </Box>
-                    <Text>{shopStatus?.description}</Text>
+                    <SkeletonText isLoaded={!isLoading} noOfLines={4} spacing="4" skeletonHeight="3">
+                        {shopStatus?.description}
+                    </SkeletonText>
                     <TableContainer w="80%" mt={-5}>
                         <Table size="sm">
                             <TableCaption placement="top" fontSize="lg" color="gray.900" m={0} textDecoration="underline" mt={2}>
@@ -79,6 +104,60 @@ export default function ShopDetail() {
                             </Tbody>
                         </Table>
                     </TableContainer>
+                    <FormControl as={VStack} spacing={4}>
+                        <HStack w="full" justify="space-around">
+                            <VStack align="start" spacing={0}>
+                                <FormLabel m={0} w="20%">
+                                    Date
+                                </FormLabel>
+                                <Input
+                                    type="date"
+                                    border="2px solid black"
+                                    borderRadius={10}
+                                    _hover={{ borderColor: "black" }}
+                                    _focusVisible={{ borderColor: "black", outline: "none" }}
+                                />
+                            </VStack>
+                            <VStack align="start" spacing={0} w="30%">
+                                <FormLabel m={0}>Start Time</FormLabel>
+                                <Input
+                                    type="time"
+                                    border="2px solid black"
+                                    borderRadius={10}
+                                    _hover={{ borderColor: "black" }}
+                                    _focusVisible={{ borderColor: "black", outline: "none" }}
+                                />
+                            </VStack>
+                            <VStack align="start" spacing={0} w="30%">
+                                <FormLabel m={0}>End Time</FormLabel>
+                                <Input
+                                    type="time"
+                                    border="2px solid black"
+                                    borderRadius={10}
+                                    _hover={{ borderColor: "black" }}
+                                    _focusVisible={{ borderColor: "black", outline: "none" }}
+                                />
+                            </VStack>
+                            <VStack align="start" spacing={0} w="20%">
+                                <FormLabel m={0}>Guest count</FormLabel>
+                                <NumberInput defaultValue={1} min={1} max={10} w="full">
+                                    <NumberInputField
+                                        border="2px solid black"
+                                        borderRadius={10}
+                                        _hover={{ borderColor: "black" }}
+                                        _focusVisible={{ borderColor: "black", outline: "none" }}
+                                    />
+                                    <NumberInputStepper borderColor="black">
+                                        <NumberIncrementStepper borderColor="black" />
+                                        <NumberDecrementStepper borderColor="black" />
+                                    </NumberInputStepper>
+                                </NumberInput>
+                            </VStack>
+                        </HStack>
+                        <HStack justify="center">
+                            <Button variant="red">Reserve</Button>
+                        </HStack>
+                    </FormControl>
                     <Button variant="darkGray" as={NextLink} href="/">
                         Go back to home
                     </Button>

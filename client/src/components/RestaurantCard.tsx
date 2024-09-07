@@ -19,7 +19,7 @@ export default function RestaurantCard({ restaurantAddress }: { restaurantAddres
     console.log("shopStatus: ", shopStatus, error);
     return (
         <Card w={200} borderRadius={10} bgColor="white" border="3px solid black">
-            <Skeleton isLoaded={!isLoading}>
+            <Skeleton isLoaded={!isLoading} aspectRatio={1 / 1}>
                 <Image src={shopStatus && shopStatus.imageURL} w="full" borderTopRadius={7} alt="shop image" />
             </Skeleton>
             <CardBody p={3}>
