@@ -1,7 +1,7 @@
 import hre from "hardhat";
 
 async function main() {
-    const contractAddress = "0xD80Eb7732D3E388D4c2D25394383062412776841";
+    const contractAddress = "0xd67C423eC3109F2f00001df9768db821BdAfeeaE";
     const contractABI = require("../artifacts/contracts/Stake2Reserve.sol/Stake2Reserve.json").abi;
     const contract = new hre.ethers.Contract(contractAddress, contractABI, hre.ethers.provider);
     const [signer, other] = await hre.ethers.getSigners();
@@ -11,15 +11,15 @@ async function main() {
 
     const name = "Food of Thrones";
     const openingWeekDays = [false, true, true, true, true, true, false];
-    const openingTime = 30000;
-    const closingTime = 58800;
+    const openingTime = 28800;
+    const closingTime = 57600;
     const courses = [
         {
             name: "King's Landing Roast Boar",
             cancelFee: 100,
             imageURLs: ["https://i.imgur.com/vFuKHqL.jpeg"],
         },
-        { name: "Dragon's Fire Stew", cancelFee: 200, imageURLs: ["https://i.imgur.com/x8BJt87.jpeg"] },
+        { name: "Dragon's Fire Stew", cancelFee: 150, imageURLs: ["https://i.imgur.com/x8BJt87.jpeg"] },
         {
             name: "Winterfell Honeyed Chicken",
             cancelFee: 200,
