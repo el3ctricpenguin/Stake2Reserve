@@ -36,6 +36,20 @@ export default function Home() {
                             <RestaurantCard key={i} restaurantAddress={address} />
                         ))}
                     </HStack>
+                    <Text fontSize={32} fontWeight="bold" textDecoration="underline" textAlign="center">
+                        Reservations
+                    </Text>
+                    {isConnected && (
+                        <HStack>
+                            <Text textAlign="center">
+                                ------------------------------
+                                <br />
+                                * No Reservation Found *
+                                <br />
+                                ------------------------------
+                            </Text>
+                        </HStack>
+                    )}
                 </VStack>
             </S2RLayout>
         </>
