@@ -23,10 +23,11 @@ import {
     NumberInput,
     NumberInputField,
     NumberInputStepper,
+    useToast,
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { getAddress, zeroAddress } from "viem";
+import { erc20Abi, getAddress, zeroAddress } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import NextLink from "next/link";
 import S2RLayout from "@/components/S2RLayout";
@@ -54,6 +55,8 @@ export default function ShopDetail() {
     const router = useRouter();
     const shopAddress = router.query.shopAddress ? (router.query.shopAddress as string) : zeroAddress;
 
+    const toast = useToast();
+
     const {
         data: shopStatus,
         isLoading,
@@ -69,17 +72,34 @@ export default function ShopDetail() {
     const [startTime, setStartTime] = useState("");
     const [guestCount, setGuestCount] = useState(1);
 
+    const [isApproveTxWaiting, setIsApproveTxWaiting] = useState(false);
     const [isReserveTxWaiting, setIsReserveTxWaiting] = useState(false);
     const { writeContractAsync } = useWriteContract();
 
     async function reserve() {
-        setIsReserveTxWaiting(true);
         try {
+            setIsApproveTxWaiting(true);
             const reservationStartTime = new Date(`${reservationDate}T${startTime}:00`).getTime() / 1000 + 60 * 60 * NY_SUMMER_TIME_DIFF;
             const reservationEndTime = reservationStartTime + 60 * 60;
             console.log("reservationStartTime", reservationStartTime);
             console.log("reservationEndTime", reservationEndTime);
-            const courseId = 1;
+            const courseId = 1; // TODO: set using UI?
+            const approveTxHash = await writeContractAsync({
+                abi: erc20Abi,
+                address: contractAddresses.MockUSDC,
+                functionName: "approve",
+                args: [contractAddresses.S2R, BigInt(100)], // TODO: get approve amount
+            });
+            const approveReceipt = await waitForTransactionReceipt(wagmiConfig, { hash: approveTxHash });
+            toast({
+                title: "Tx Confirmed",
+                description: `Approve Tx Confirmed: ${approveTxHash} on ${approveReceipt.blockHash}`,
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
+            setIsApproveTxWaiting(false);
+            setIsReserveTxWaiting(true);
             const reserveTxHash = await writeContractAsync({
                 abi: stake2ReserveAbi,
                 address: contractAddresses.S2R,
@@ -97,6 +117,14 @@ export default function ShopDetail() {
             setIsReserveTxWaiting(false);
         } catch (error) {
             console.error(error);
+            toast({
+                title: "Error",
+                description: `${error}`,
+                status: "error",
+                duration: 5000,
+                isClosable: true,
+            });
+            setIsApproveTxWaiting(true);
             setIsReserveTxWaiting(false);
         }
     }
@@ -203,8 +231,8 @@ export default function ShopDetail() {
                                 borderRadius={10}
                                 minW="150px"
                                 flex={1}
-                                isLoading={isReserveTxWaiting}
-                                loadingText="Reserving"
+                                isLoading={isApproveTxWaiting || isReserveTxWaiting}
+                                loadingText={isApproveTxWaiting ? "Approving" : "Reserving"}
                                 onClick={() => reserve()}
                             >
                                 Reserve
