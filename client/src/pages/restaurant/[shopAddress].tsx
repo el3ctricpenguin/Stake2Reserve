@@ -42,7 +42,7 @@ function getTimeFromBigInt(time: bigint = BigInt(0)) {
 }
 
 function getAvailableDays(daysArray: readonly boolean[]) {
-    const weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const weekDays = ["Sun", " Mon", " Tue", " Wed", " Thu", " Fri", " Sat"];
     const openingDays = daysArray.map((isOpen, i) => (isOpen ? weekDays[i] : null)).filter(Boolean);
     return openingDays.toString();
 }
@@ -57,15 +57,24 @@ export default function ShopDetail() {
 
     const toast = useToast();
 
-    const {
-        data: shopStatus,
-        isLoading,
-        error,
-    } = useReadContract({
+    const { data: shopStatus, isLoading } = useReadContract({
         address: contractAddresses.S2R,
         abi: stake2ReserveAbi,
         functionName: "getShopStatus",
         args: [getAddress(shopAddress)],
+    });
+
+    const { data: course1 } = useReadContract({
+        address: contractAddresses.S2R,
+        abi: stake2ReserveAbi,
+        functionName: "getCourses",
+        args: [getAddress(shopAddress), BigInt(1)],
+    });
+    const { data: course2 } = useReadContract({
+        address: contractAddresses.S2R,
+        abi: stake2ReserveAbi,
+        functionName: "getCourses",
+        args: [getAddress(shopAddress), BigInt(2)],
     });
 
     const [reservationDate, setReservationDate] = useState("");
@@ -150,7 +159,15 @@ export default function ShopDetail() {
                     </SkeletonText>
                     <TableContainer w="80%" mt={-5}>
                         <Table size="sm">
-                            <TableCaption placement="top" fontSize="lg" color="gray.900" m={0} textDecoration="underline" mt={2}>
+                            <TableCaption
+                                placement="top"
+                                color="gray.900"
+                                m={0}
+                                fontSize={21}
+                                textDecor="underline"
+                                fontWeight="bold"
+                                mt={2}
+                            >
                                 Restaurant Infomation
                             </TableCaption>
                             <Tbody>
@@ -181,6 +198,35 @@ export default function ShopDetail() {
                             </Tbody>
                         </Table>
                     </TableContainer>
+                    <VStack>
+                        <Text fontSize={21} textDecor="underline" fontWeight="bold">
+                            Courses
+                        </Text>
+                        {course1 && (
+                            <VStack>
+                                <Text>
+                                    #1 {course1?.name} (Cancel Fee: ${course1?.cancelFee.toString()})
+                                </Text>
+                                <HStack>
+                                    {course1?.imageURLs.map((url, i) => (
+                                        <Image src={url} key={i} alt="" h={120} />
+                                    ))}
+                                </HStack>
+                            </VStack>
+                        )}
+                        {course2 && course2.name && (
+                            <VStack>
+                                <Text>
+                                    #2 {course2?.name} (Cancel Fee: ${course2?.cancelFee.toString()})
+                                </Text>
+                                <HStack>
+                                    {course2?.imageURLs.map((url, i) => (
+                                        <Image src={url} key={i} alt="" h={120} />
+                                    ))}
+                                </HStack>
+                            </VStack>
+                        )}
+                    </VStack>
                     <FormControl as={VStack} spacing={4}>
                         <HStack w="full" justify="space-around" align="end">
                             <VStack align="start" spacing={0} flex={2}>
@@ -239,9 +285,6 @@ export default function ShopDetail() {
                             </Button>
                         </HStack>
                     </FormControl>
-                    <Text>reservationDate: {reservationDate}</Text>
-                    <Text>startTime: {startTime}</Text>
-                    <Text>guestCount: {guestCount}</Text>
                     <Button variant="darkGray" as={NextLink} href="/">
                         Go back to home
                     </Button>
