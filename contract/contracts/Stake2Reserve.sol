@@ -166,6 +166,7 @@ contract Stake2Reserve {
         _tokenIds.increment();
         ShopStatus storage shop = shops[_shopAddress];
         s2r.mintReservationNFT(
+            msg.sender,
             _shopAddress,
             shop.name,
             _startingTime,
@@ -420,7 +421,7 @@ contract Stake2Reserve {
             );
     }
 
-    function getCourses(
+    function getCourse(
         address _shopAddress,
         uint256 _courseId
     ) public view returns (Course memory) {

@@ -22,6 +22,7 @@ contract S2RNFT is ERC721URIStorage {
     |   NFT   |
     +--------*/
     function mintReservationNFT(
+        address _mintTo,
         address _shopAddress,
         string memory _shopName,
         uint256 _startingTime,
@@ -42,7 +43,7 @@ contract S2RNFT is ERC721URIStorage {
             _cancelFee
         );
         // console.log(tokenURI);
-        _mint(msg.sender, newItemId);
+        _mint(_mintTo, newItemId);
         _setTokenURI(newItemId, tokenURI);
 
         _tokenIds.increment();
