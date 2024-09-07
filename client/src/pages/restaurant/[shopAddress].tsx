@@ -21,8 +21,6 @@ function getAvailableDays(daysArray: readonly boolean[]) {
 }
 
 export default function ShopDetail() {
-    const { connectors, connect } = useConnect();
-    const { disconnect } = useDisconnect();
     const { isConnected, address } = useAccount();
 
     const router = useRouter();
@@ -60,7 +58,7 @@ export default function ShopDetail() {
                     <Text>{shopStatus?.description}</Text>
                     <TableContainer w="80%" mt={-5}>
                         <Table size="sm">
-                            <TableCaption placement="top" fontSize="lg" color="gray.900" m={0}>
+                            <TableCaption placement="top" fontSize="lg" color="gray.900" m={0} textDecoration="underline" mt={2}>
                                 Restaurant Infomation
                             </TableCaption>
                             <Tbody>
@@ -81,6 +79,9 @@ export default function ShopDetail() {
                             </Tbody>
                         </Table>
                     </TableContainer>
+                    <Button variant="darkGray" as={NextLink} href="/">
+                        Go back to home
+                    </Button>
                 </VStack>
             </S2RLayout>
         </>

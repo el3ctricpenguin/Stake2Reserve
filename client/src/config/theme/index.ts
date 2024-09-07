@@ -10,6 +10,8 @@ const createTheme = () =>
             brand: {
                 red: "#C81111",
                 redHover: "#A10000",
+                darkGray: "#2d2d2d",
+                darkGrayHover: "#000",
             },
         },
         fonts: {
@@ -61,6 +63,19 @@ const createTheme = () =>
                         },
                         _active: {
                             bgColor: "brand.redHover",
+                        },
+                    },
+                    darkGray: {
+                        bgColor: "brand.darkGray",
+                        color: "white",
+                        fontSize: 20,
+                        px: 4,
+                        py: 2,
+                        _hover: {
+                            bgColor: "brand.darkGrayHover",
+                        },
+                        _active: {
+                            bgColor: "brand.darkGrayHover",
                         },
                     },
                 },

@@ -27,7 +27,7 @@ export default function RestaurantCard({ restaurantAddress }: { restaurantAddres
                     <Text color="gray.900" fontSize={20} fontWeight="bold">
                         {shopStatus?.name}
                     </Text>
-                    <Button variant="red" as={NextLink} href={`/shop/${restaurantAddress}`}>
+                    <Button variant="red" as={NextLink} href={`/restaurant/${restaurantAddress}`}>
                         Reserve!
                     </Button>
                 </VStack>
