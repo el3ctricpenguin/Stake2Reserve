@@ -27,7 +27,7 @@ import {
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { erc20Abi, formatEther, getAddress, parseEther, parseUnits, zeroAddress } from "viem";
+import { erc20Abi, getAddress, parseUnits, zeroAddress } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import NextLink from "next/link";
 import S2RLayout from "@/components/S2RLayout";
@@ -68,14 +68,15 @@ export default function ShopDetail() {
     const { data: course1 } = useReadContract({
         address: contractAddresses.S2R,
         abi: stake2ReserveAbi,
-        functionName: "getCourses",
-        args: [getAddress(shopAddress), BigInt(1)],
+        functionName: "getCourse",
+        args: [getAddress(shopAddress), BigInt(0)],
     });
+    console.log(course1);
     const { data: course2 } = useReadContract({
         address: contractAddresses.S2R,
         abi: stake2ReserveAbi,
-        functionName: "getCourses",
-        args: [getAddress(shopAddress), BigInt(2)],
+        functionName: "getCourse",
+        args: [getAddress(shopAddress), BigInt(1)],
     });
 
     const [reservationDate, setReservationDate] = useState("");
