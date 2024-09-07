@@ -428,6 +428,31 @@ contract Stake2Reserve {
         return shops[_shopAddress].courses[_courseId];
     }
 
+    function getCoursesLength(
+        address _shopAddress
+    ) public view returns (uint256) {
+        uint256 tokenCount = _tokenIds.current();
+        uint256 courcesCount = 0;
+        for (uint256 i = 0; i < tokenCount; i++) {
+            string memory courceName = shops[_shopAddress].courses[i].name;
+            if (bytes(courceName).length > 0) {
+                courcesCount++;
+            }
+        }
+        return courcesCount;
+    }
+
+    function getCourses(
+        address _shopAddress
+    ) public view returns (Course[] memory) {
+        uint256 courcesCount = getCoursesLength(_shopAddress);
+        Course[] memory cources = new Course[](courcesCount);
+        for (uint256 i = 0; i < courcesCount; i++) {
+            cources[i] = shops[_shopAddress].courses[i];
+        }
+        return cources;
+    }
+
     function getNoShowNFTs(
         address _shopAddress
     ) public view returns (uint256[] memory) {
