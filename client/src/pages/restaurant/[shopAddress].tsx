@@ -162,7 +162,7 @@ export default function ShopDetail() {
             <S2RLayout>
                 <VStack px={10} py={6} spacing={5}>
                     <Text fontSize={32} fontWeight="bold" textDecoration="underline" textAlign="center">
-                        {isLoading ? "Restaurant" : shopStatus?.name}
+                        {isLoading ? "***" : shopStatus?.name}
                     </Text>
                     <Box w="33%" borderRadius={10} border="3px solid black">
                         <Skeleton isLoaded={!isLoading} aspectRatio={1 / 1}>
