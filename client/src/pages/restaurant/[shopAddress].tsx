@@ -27,9 +27,12 @@ import {
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { getAddress, zeroAddress } from "viem";
-import { useAccount, useConnect, useDisconnect, useReadContract } from "wagmi";
+import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import NextLink from "next/link";
 import S2RLayout from "@/components/S2RLayout";
+import { wagmiConfig } from "@/config/wagmi";
+import { useState } from "react";
+import { waitForTransactionReceipt } from "wagmi/actions";
 
 function getTimeFromBigInt(time: bigint = BigInt(0)) {
     const hour = time / BigInt(60 * 60);
@@ -43,12 +46,13 @@ function getAvailableDays(daysArray: readonly boolean[]) {
     return openingDays.toString();
 }
 
+const NY_SUMMER_TIME_DIFF = -13; // 日本時間とNT夏時間の時差
+
 export default function ShopDetail() {
     const { isConnected, address } = useAccount();
 
     const router = useRouter();
-    const shopAddresses = router.query.shopAddress ? (router.query.shopAddress as string) : zeroAddress;
-    console.log("shopAddresses: ", shopAddresses);
+    const shopAddress = router.query.shopAddress ? (router.query.shopAddress as string) : zeroAddress;
 
     const {
         data: shopStatus,
@@ -58,9 +62,44 @@ export default function ShopDetail() {
         address: contractAddresses.S2R,
         abi: stake2ReserveAbi,
         functionName: "getShopStatus",
-        args: [getAddress(shopAddresses)],
+        args: [getAddress(shopAddress)],
     });
-    console.log("shopStatus: ", shopStatus, error);
+
+    const [reservationDate, setReservationDate] = useState("");
+    const [startTime, setStartTime] = useState("");
+    const [guestCount, setGuestCount] = useState(1);
+
+    const [isReserveTxWaiting, setIsReserveTxWaiting] = useState(false);
+    const { writeContractAsync } = useWriteContract();
+
+    async function reserve() {
+        setIsReserveTxWaiting(true);
+        try {
+            const reservationStartTime = new Date(`${reservationDate}T${startTime}:00`).getTime() / 1000 + 60 * 60 * NY_SUMMER_TIME_DIFF;
+            const reservationEndTime = reservationStartTime + 60 * 60;
+            console.log("reservationStartTime", reservationStartTime);
+            console.log("reservationEndTime", reservationEndTime);
+            const courseId = 1;
+            const reserveTxHash = await writeContractAsync({
+                abi: stake2ReserveAbi,
+                address: contractAddresses.S2R,
+                functionName: "reserve",
+                args: [
+                    getAddress(shopAddress),
+                    BigInt(reservationStartTime),
+                    BigInt(reservationEndTime),
+                    BigInt(guestCount),
+                    BigInt(courseId),
+                ],
+            });
+            const reserveReceipt = await waitForTransactionReceipt(wagmiConfig, { hash: reserveTxHash });
+            console.log("reserveReceipt: ", reserveReceipt);
+            setIsReserveTxWaiting(false);
+        } catch (error) {
+            console.error(error);
+            setIsReserveTxWaiting(false);
+        }
+    }
 
     return (
         <>
@@ -88,37 +127,47 @@ export default function ShopDetail() {
                             </TableCaption>
                             <Tbody>
                                 <Tr>
-                                    <Td fontSize={16}>Genre</Td>
-                                    <Td fontSize={16}>{shopStatus?.genre}</Td>
+                                    <Td fontSize={16} borderColor="gray.900">
+                                        Genre
+                                    </Td>
+                                    <Td fontSize={16} borderColor="gray.900">
+                                        {shopStatus?.genre}
+                                    </Td>
                                 </Tr>
                                 <Tr>
-                                    <Td fontSize={16}>Opening Hours</Td>
-                                    <Td fontSize={16}>
+                                    <Td fontSize={16} borderColor="gray.900">
+                                        Opening Hours
+                                    </Td>
+                                    <Td fontSize={16} borderColor="gray.900">
                                         {getTimeFromBigInt(shopStatus?.openingTime)}-{getTimeFromBigInt(shopStatus?.closingTime)}
                                     </Td>
                                 </Tr>
                                 <Tr>
-                                    <Td fontSize={16}>Opening Days</Td>
-                                    <Td fontSize={16}>{shopStatus?.openingWeekDays && getAvailableDays(shopStatus?.openingWeekDays)}</Td>
+                                    <Td fontSize={16} borderColor="gray.900">
+                                        Opening Days
+                                    </Td>
+                                    <Td fontSize={16} borderColor="gray.900">
+                                        {shopStatus?.openingWeekDays && getAvailableDays(shopStatus?.openingWeekDays)}
+                                    </Td>
                                 </Tr>
                             </Tbody>
                         </Table>
                     </TableContainer>
                     <FormControl as={VStack} spacing={4}>
-                        <HStack w="full" justify="space-around">
-                            <VStack align="start" spacing={0}>
-                                <FormLabel m={0} w="20%">
-                                    Date
-                                </FormLabel>
+                        <HStack w="full" justify="space-around" align="end">
+                            <VStack align="start" spacing={0} flex={2}>
+                                <FormLabel m={0}>Date</FormLabel>
                                 <Input
                                     type="date"
                                     border="2px solid black"
                                     borderRadius={10}
                                     _hover={{ borderColor: "black" }}
                                     _focusVisible={{ borderColor: "black", outline: "none" }}
+                                    value={reservationDate}
+                                    onChange={(e) => setReservationDate(e.target.value)}
                                 />
                             </VStack>
-                            <VStack align="start" spacing={0} w="30%">
+                            <VStack align="start" spacing={0} flex={2}>
                                 <FormLabel m={0}>Start Time</FormLabel>
                                 <Input
                                     type="time"
@@ -126,38 +175,45 @@ export default function ShopDetail() {
                                     borderRadius={10}
                                     _hover={{ borderColor: "black" }}
                                     _focusVisible={{ borderColor: "black", outline: "none" }}
+                                    value={startTime}
+                                    onChange={(e) => setStartTime(e.target.value)}
                                 />
                             </VStack>
-                            <VStack align="start" spacing={0} w="30%">
-                                <FormLabel m={0}>End Time</FormLabel>
-                                <Input
-                                    type="time"
-                                    border="2px solid black"
-                                    borderRadius={10}
-                                    _hover={{ borderColor: "black" }}
-                                    _focusVisible={{ borderColor: "black", outline: "none" }}
-                                />
-                            </VStack>
-                            <VStack align="start" spacing={0} w="20%">
+                            <VStack align="start" spacing={0} flex={1} minW="80px">
                                 <FormLabel m={0}>Guest count</FormLabel>
-                                <NumberInput defaultValue={1} min={1} max={10} w="full">
+                                <NumberInput min={1} max={10} value={guestCount} w="full">
                                     <NumberInputField
                                         border="2px solid black"
                                         borderRadius={10}
                                         _hover={{ borderColor: "black" }}
                                         _focusVisible={{ borderColor: "black", outline: "none" }}
+                                        onChange={(e) => setGuestCount(Number(e.target.value))}
                                     />
                                     <NumberInputStepper borderColor="black">
-                                        <NumberIncrementStepper borderColor="black" />
-                                        <NumberDecrementStepper borderColor="black" />
+                                        <NumberIncrementStepper borderColor="black" onClick={() => setGuestCount(guestCount + 1)} />
+                                        <NumberDecrementStepper
+                                            borderColor="black"
+                                            onClick={() => setGuestCount(guestCount > 1 ? guestCount - 1 : guestCount)}
+                                        />
                                     </NumberInputStepper>
                                 </NumberInput>
                             </VStack>
-                        </HStack>
-                        <HStack justify="center">
-                            <Button variant="red">Reserve</Button>
+                            <Button
+                                variant="red"
+                                borderRadius={10}
+                                minW="150px"
+                                flex={1}
+                                isLoading={isReserveTxWaiting}
+                                loadingText="Reserving"
+                                onClick={() => reserve()}
+                            >
+                                Reserve
+                            </Button>
                         </HStack>
                     </FormControl>
+                    <Text>reservationDate: {reservationDate}</Text>
+                    <Text>startTime: {startTime}</Text>
+                    <Text>guestCount: {guestCount}</Text>
                     <Button variant="darkGray" as={NextLink} href="/">
                         Go back to home
                     </Button>

@@ -64,6 +64,11 @@ const createTheme = () =>
                         _active: {
                             bgColor: "brand.redHover",
                         },
+                        _loading: {
+                            _hover: {
+                                bgColor: "brand.redHover",
+                            },
+                        },
                     },
                     darkGray: {
                         bgColor: "brand.darkGray",
@@ -76,6 +81,11 @@ const createTheme = () =>
                         },
                         _active: {
                             bgColor: "brand.darkGrayHover",
+                        },
+                        _loading: {
+                            _hover: {
+                                bgColor: "brand.darkGrayHover",
+                            },
                         },
                     },
                 },

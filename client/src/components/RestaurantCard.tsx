@@ -16,7 +16,6 @@ export default function RestaurantCard({ restaurantAddress }: { restaurantAddres
         functionName: "getShopStatus",
         args: [restaurantAddress],
     });
-    console.log("shopStatus: ", shopStatus, error);
     return (
         <Card w={200} borderRadius={10} bgColor="white" border="3px solid black">
             <Skeleton isLoaded={!isLoading} aspectRatio={1 / 1}>
