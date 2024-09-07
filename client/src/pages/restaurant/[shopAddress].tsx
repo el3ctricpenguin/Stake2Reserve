@@ -27,13 +27,14 @@ import {
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { erc20Abi, getAddress, zeroAddress } from "viem";
+import { erc20Abi, formatEther, getAddress, parseEther, parseUnits, zeroAddress } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import NextLink from "next/link";
 import S2RLayout from "@/components/S2RLayout";
 import { wagmiConfig } from "@/config/wagmi";
 import { useState } from "react";
 import { waitForTransactionReceipt } from "wagmi/actions";
+import { readContract } from "@wagmi/core";
 
 function getTimeFromBigInt(time: bigint = BigInt(0)) {
     const hour = time / BigInt(60 * 60);
@@ -85,28 +86,35 @@ export default function ShopDetail() {
     const [isReserveTxWaiting, setIsReserveTxWaiting] = useState(false);
     const { writeContractAsync } = useWriteContract();
 
-    async function reserve() {
+    async function reserve(courseId: number) {
         try {
             setIsApproveTxWaiting(true);
             const reservationStartTime = new Date(`${reservationDate}T${startTime}:00`).getTime() / 1000 + 60 * 60 * NY_SUMMER_TIME_DIFF;
             const reservationEndTime = reservationStartTime + 60 * 60;
-            console.log("reservationStartTime", reservationStartTime);
-            console.log("reservationEndTime", reservationEndTime);
-            const courseId = 1; // TODO: set using UI?
-            const approveTxHash = await writeContractAsync({
+            const cancelFee = parseUnits(course1 ? course1?.cancelFee.toString() : "0", 6);
+            const approveAmount = await readContract(wagmiConfig, {
                 abi: erc20Abi,
                 address: contractAddresses.MockUSDC,
-                functionName: "approve",
-                args: [contractAddresses.S2R, BigInt(100)], // TODO: get approve amount
+                functionName: "allowance",
+                args: [address ? address : zeroAddress, contractAddresses.S2R],
             });
-            const approveReceipt = await waitForTransactionReceipt(wagmiConfig, { hash: approveTxHash });
-            toast({
-                title: "Tx Confirmed",
-                description: `Approve Tx Confirmed: ${approveTxHash} on ${approveReceipt.blockHash}`,
-                status: "success",
-                duration: 5000,
-                isClosable: true,
-            });
+            if (approveAmount < cancelFee) {
+                const approveTxHash = await writeContractAsync({
+                    abi: erc20Abi,
+                    address: contractAddresses.MockUSDC,
+                    functionName: "approve",
+                    args: [contractAddresses.S2R, cancelFee],
+                });
+                const approveReceipt = await waitForTransactionReceipt(wagmiConfig, { hash: approveTxHash });
+                toast({
+                    title: "Tx Confirmed",
+                    description: `Approve Tx Confirmed: ${approveTxHash} on ${approveReceipt.blockHash}`,
+                    status: "success",
+                    duration: 5000,
+                    isClosable: true,
+                });
+            }
+
             setIsApproveTxWaiting(false);
             setIsReserveTxWaiting(true);
             const reserveTxHash = await writeContractAsync({
@@ -123,6 +131,13 @@ export default function ShopDetail() {
             });
             const reserveReceipt = await waitForTransactionReceipt(wagmiConfig, { hash: reserveTxHash });
             console.log("reserveReceipt: ", reserveReceipt);
+            toast({
+                title: "Tx Confirmed",
+                description: `Reserve Tx Confirmed: ${reserveTxHash} on ${reserveReceipt.blockHash}`,
+                status: "success",
+                duration: 5000,
+                isClosable: true,
+            });
             setIsReserveTxWaiting(false);
         } catch (error) {
             console.error(error);
@@ -133,7 +148,7 @@ export default function ShopDetail() {
                 duration: 5000,
                 isClosable: true,
             });
-            setIsApproveTxWaiting(true);
+            setIsApproveTxWaiting(false);
             setIsReserveTxWaiting(false);
         }
     }
@@ -279,7 +294,7 @@ export default function ShopDetail() {
                                 flex={1}
                                 isLoading={isApproveTxWaiting || isReserveTxWaiting}
                                 loadingText={isApproveTxWaiting ? "Approving" : "Reserving"}
-                                onClick={() => reserve()}
+                                onClick={() => reserve(1)}
                             >
                                 Reserve
                             </Button>

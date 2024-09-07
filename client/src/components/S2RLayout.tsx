@@ -9,8 +9,8 @@ export default function S2RLayout({ children }: { children: ReactElement }) {
     const { isConnected, address } = useAccount();
     return (
         <Box w="full">
-            <Box margin="0 auto" w={{ base: 600, md: "80%" }}>
-                <HStack justify="space-between" mt={10} mb={4}>
+            <Box margin="0 auto" w={{ base: 600, md: "80%" }} my={10}>
+                <HStack justify="space-between" mb={4}>
                     <NextLink href="/">
                         <Image src="/img/Stake2Reserve.svg" alt="Stake2Reserve logo" h={50} />
                     </NextLink>
