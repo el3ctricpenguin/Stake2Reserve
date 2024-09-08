@@ -3,19 +3,17 @@ import { stake2ReserveAbi } from "@/generated";
 import { Box, HStack, Text, Image, Button, VStack, Table, TableContainer, Tbody, Th, Tr, Td, Skeleton } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { useAccount, useReadContract, useWriteContract } from "wagmi";
+import { useAccount, useReadContract } from "wagmi";
 import NextLink from "next/link";
 import S2RLayout from "@/components/S2RLayout";
-import ReservationTr, { getDateTimeFromUnixTimestamp } from "@/components/ReservationTr";
+import { getDateTimeFromUnixTimestamp } from "@/components/ReservationTr";
 import { getAddress, zeroAddress } from "viem";
-
-const NY_SUMMER_TIME_DIFF = -13; // 日本時間とNT夏時間の時差
 
 export default function ShopDetail() {
     const { isConnected, address } = useAccount();
 
     const router = useRouter();
-    const nftId = BigInt(Number(router.query.nftId).toString());
+    const nftId = BigInt(Number(router.query.nftId ? router.query.nftId : 0).toString());
 
     const { data: reservationData } = useReadContract({
         address: contractAddresses.S2R,
