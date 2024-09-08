@@ -63,7 +63,7 @@ export default function Home() {
                                         </Th>
                                     </Tr>
                                     {nftIds.map((nftId, i) => (
-                                        <ReservationTr nftId={nftId} />
+                                        <ReservationTr nftId={nftId} key={i} />
                                     ))}
                                 </Tbody>
                             </Table>

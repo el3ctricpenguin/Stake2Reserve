@@ -4,7 +4,7 @@ import { Td, Tr } from "@chakra-ui/react";
 import NextLink from "next/link";
 import { useReadContract } from "wagmi";
 
-function getDateTimeFromUnixTimestamp(timestamp: number): string {
+export function getDateTimeFromUnixTimestamp(timestamp: number): string {
     const date = new Date(timestamp * 1000);
     const month = (date.getUTCMonth() + 1).toString().padStart(2, "0");
     const day = date.getUTCDate().toString().padStart(2, "0");
