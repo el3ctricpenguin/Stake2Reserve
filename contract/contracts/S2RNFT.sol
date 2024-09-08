@@ -2,11 +2,12 @@
 pragma solidity ^0.8.19;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
+import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/utils/Counters.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 
-contract S2RNFT is ERC721URIStorage {
+contract S2RNFT is ERC721URIStorage, ERC721Enumerable {
     using Counters for Counters.Counter;
     Counters.Counter private _tokenIds;
 
@@ -22,6 +23,7 @@ contract S2RNFT is ERC721URIStorage {
     |   NFT   |
     +--------*/
     function mintReservationNFT(
+        address _mintTo,
         address _shopAddress,
         string memory _shopName,
         uint256 _startingTime,
@@ -32,7 +34,7 @@ contract S2RNFT is ERC721URIStorage {
     ) public {
         uint256 newItemId = _tokenIds.current();
 
-        string memory tokenURI = makeTokenURI(
+        string memory tokenURITemp = makeTokenURI(
             _shopAddress,
             _shopName,
             _startingTime,
@@ -41,9 +43,8 @@ contract S2RNFT is ERC721URIStorage {
             _courseId,
             _cancelFee
         );
-        // console.log(tokenURI);
-        _mint(msg.sender, newItemId);
-        _setTokenURI(newItemId, tokenURI);
+        _mint(_mintTo, newItemId);
+        _setTokenURI(newItemId, tokenURITemp);
 
         _tokenIds.increment();
     }
@@ -117,7 +118,7 @@ contract S2RNFT is ERC721URIStorage {
         uint256 _courseId,
         uint256 _cancelFee
     ) public {
-        string memory tokenURI = string(
+        string memory tokenURITemp = string(
             abi.encodePacked(
                 "data:application/json;base64,",
                 Base64.encode(
@@ -164,7 +165,7 @@ contract S2RNFT is ERC721URIStorage {
                 )
             )
         );
-        _setTokenURI(_tokenId, tokenURI);
+        _setTokenURI(_tokenId, tokenURITemp);
         // console.log("tokenURI: ", tokenURI);
     }
 
@@ -174,5 +175,46 @@ contract S2RNFT is ERC721URIStorage {
 
     function exists(uint256 _tokenId) public view returns (bool) {
         return _exists(_tokenId);
+    }
+
+    // override ERC721Enumerable
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId,
+        uint256 batchSize
+    ) internal override(ERC721, ERC721Enumerable) {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+    }
+
+    function supportsInterface(
+        bytes4 interfaceId
+    ) public view override(ERC721Enumerable, ERC721URIStorage) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
+
+    function getTokenIdsByOwner(
+        address owner
+    ) public view returns (uint256[] memory) {
+        uint256 balance = balanceOf(owner);
+        uint256[] memory tokenIds = new uint256[](balance);
+
+        for (uint256 i = 0; i < balance; i++) {
+            tokenIds[i] = tokenOfOwnerByIndex(owner, i);
+        }
+
+        return tokenIds;
+    }
+
+    function _burn(
+        uint256 tokenId
+    ) internal override(ERC721, ERC721URIStorage) {
+        super._burn(tokenId);
+    }
+
+    function tokenURI(
+        uint256 tokenId
+    ) public view override(ERC721, ERC721URIStorage) returns (string memory) {
+        return super.tokenURI(tokenId);
     }
 }

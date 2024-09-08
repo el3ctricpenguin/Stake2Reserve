@@ -27,7 +27,7 @@ import {
 } from "@chakra-ui/react";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { erc20Abi, formatEther, getAddress, parseEther, parseUnits, zeroAddress } from "viem";
+import { erc20Abi, getAddress, parseUnits, zeroAddress } from "viem";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import NextLink from "next/link";
 import S2RLayout from "@/components/S2RLayout";
@@ -68,14 +68,15 @@ export default function ShopDetail() {
     const { data: course1 } = useReadContract({
         address: contractAddresses.S2R,
         abi: stake2ReserveAbi,
-        functionName: "getCourses",
-        args: [getAddress(shopAddress), BigInt(1)],
+        functionName: "getCourse",
+        args: [getAddress(shopAddress), BigInt(0)],
     });
+    console.log(course1);
     const { data: course2 } = useReadContract({
         address: contractAddresses.S2R,
         abi: stake2ReserveAbi,
-        functionName: "getCourses",
-        args: [getAddress(shopAddress), BigInt(2)],
+        functionName: "getCourse",
+        args: [getAddress(shopAddress), BigInt(1)],
     });
 
     const [reservationDate, setReservationDate] = useState("");
@@ -162,7 +163,7 @@ export default function ShopDetail() {
             <S2RLayout>
                 <VStack px={10} py={6} spacing={5}>
                     <Text fontSize={32} fontWeight="bold" textDecoration="underline" textAlign="center">
-                        {isLoading ? "Restaurant" : shopStatus?.name}
+                        {isLoading ? "***" : shopStatus?.name}
                     </Text>
                     <Box w="33%" borderRadius={10} border="3px solid black">
                         <Skeleton isLoaded={!isLoading} aspectRatio={1 / 1}>
@@ -183,7 +184,7 @@ export default function ShopDetail() {
                                 fontWeight="bold"
                                 mt={2}
                             >
-                                Restaurant Infomation
+                                Restaurant Information
                             </TableCaption>
                             <Tbody>
                                 <Tr>
@@ -294,7 +295,7 @@ export default function ShopDetail() {
                                 flex={1}
                                 isLoading={isApproveTxWaiting || isReserveTxWaiting}
                                 loadingText={isApproveTxWaiting ? "Approving" : "Reserving"}
-                                onClick={() => reserve(1)}
+                                onClick={() => reserve(0)}
                             >
                                 Reserve
                             </Button>

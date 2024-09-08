@@ -7,6 +7,6 @@ export const wagmiConfig = createConfig({
     connectors: [injected()],
     ssr: true,
     transports: {
-        [sepolia.id]: http(),
+        [sepolia.id]: http("https://ethereum-sepolia-rpc.publicnode.com"),
     },
 });
