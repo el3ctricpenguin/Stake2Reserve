@@ -184,7 +184,7 @@ export default function ShopDetail() {
                                 fontWeight="bold"
                                 mt={2}
                             >
-                                Restaurant Infomation
+                                Restaurant Information
                             </TableCaption>
                             <Tbody>
                                 <Tr>
@@ -295,7 +295,7 @@ export default function ShopDetail() {
                                 flex={1}
                                 isLoading={isApproveTxWaiting || isReserveTxWaiting}
                                 loadingText={isApproveTxWaiting ? "Approving" : "Reserving"}
-                                onClick={() => reserve(1)}
+                                onClick={() => reserve(0)}
                             >
                                 Reserve
                             </Button>
