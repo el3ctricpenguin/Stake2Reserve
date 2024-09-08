@@ -47,39 +47,38 @@ export default function Home() {
                     <Text fontSize={32} fontWeight="bold" textDecoration="underline" textAlign="center">
                         Reservations
                     </Text>
-                    {isConnected &&
-                        (nftIds ? (
-                            <TableContainer w="80%" mt={-2}>
-                                <Table size="sm">
-                                    <Tbody>
-                                        <Tr>
-                                            <Th fontSize={14} borderColor="gray.900">
-                                                Restaurant
-                                            </Th>
-                                            <Th fontSize={14} borderColor="gray.900">
-                                                Time
-                                            </Th>
-                                            <Th fontSize={14} borderColor="gray.900">
-                                                Guests
-                                            </Th>
-                                        </Tr>
-                                        {nftIds.map((nftId, i) => (
-                                            <ReservationTr nftId={nftId} />
-                                        ))}
-                                    </Tbody>
-                                </Table>
-                            </TableContainer>
-                        ) : (
-                            <HStack>
-                                <Text textAlign="center">
-                                    ------------------------------
-                                    <br />
-                                    * No Reservation Found *
-                                    <br />
-                                    ------------------------------
-                                </Text>
-                            </HStack>
-                        ))}
+                    {isConnected && nftIds && nftIds?.length !== 0 ? (
+                        <TableContainer w="80%" mt={-2}>
+                            <Table size="sm">
+                                <Tbody>
+                                    <Tr>
+                                        <Th fontSize={14} borderColor="gray.900">
+                                            Restaurant
+                                        </Th>
+                                        <Th fontSize={14} borderColor="gray.900">
+                                            Time
+                                        </Th>
+                                        <Th fontSize={14} borderColor="gray.900">
+                                            Guests
+                                        </Th>
+                                    </Tr>
+                                    {nftIds.map((nftId, i) => (
+                                        <ReservationTr nftId={nftId} />
+                                    ))}
+                                </Tbody>
+                            </Table>
+                        </TableContainer>
+                    ) : (
+                        <HStack>
+                            <Text textAlign="center">
+                                ------------------------------
+                                <br />
+                                * No Reservation Found *
+                                <br />
+                                ------------------------------
+                            </Text>
+                        </HStack>
+                    )}
                 </VStack>
             </S2RLayout>
         </>
